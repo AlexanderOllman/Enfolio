@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/page_content.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <article>
+                {% if post.image_url %}
+                <img src="{{ post.image_url }}" class="img-fluid rounded mb-4" alt="{{ post.title }}">
+                {% endif %}
+                <h1 class="mb-4">{{ post.title }}</h1>
+                <p class="text-muted">
+                    <small>Published on {{ post.date_created.strftime('%B %d, %Y') }}</small>
+                </p>
+                <div class="blog-content mb-4">
+                    {{ post.content }}
+                </div>
+
+                <!-- Add page builder content -->
+                {% if post.page_content %}
+                    <div class="page-content">
+                        {% for element in post.page_content %}
+                            {% if element.type == 'header' %}
+                                {% if element.heading_type == 'h1' %}
+                                    <h1>{{ element.content }}</h1>
+                                {% elif element.heading_type == 'h2' %}
+                                    <h2>{{ element.content }}</h2>
+                                {% elif element.heading_type == 'h3' %}
+                                    <h3>{{ element.content }}</h3>
+                                {% endif %}
+                            {% elif element.type == 'text' %}
+                                <p>{{ element.content }}</p>
+                            {% elif element.type == 'image' %}
+                                <figure>
+                                    <img src="{{ element.image_url }}" alt="{{ element.content }}">
+                                    {% if element.content %}
+                                        <figcaption>{{ element.content }}</figcaption>
+                                    {% endif %}
+                                </figure>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </article>
+        </div>
+    </div>
+</div>
+{% endblock %} 

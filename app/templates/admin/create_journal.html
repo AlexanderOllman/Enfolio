@@ -1,0 +1,130 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2 class="form-card-title">Create Journal Entry</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.csrf_token }}
+            <!-- Content Search -->
+            <div class="form-group">
+                <label for="content_search" class="form-label">Link to Content</label>
+                <div class="form-dropdown">
+                    <input type="text" 
+                           class="form-control" 
+                           id="content_search" 
+                           placeholder="Search content..."
+                           autocomplete="off">
+                    <input type="hidden" 
+                           id="content_id" 
+                           name="content_id" 
+                           value="{{ last_edited.id if last_edited else '' }}" 
+                           required>
+                    <div class="form-dropdown-menu" id="search_results">
+                        {% if last_edited %}
+                        <button type="button" 
+                                class="form-dropdown-item selected" 
+                                data-id="{{ last_edited.id }}"
+                                data-title="{{ last_edited.title }}"
+                                data-type="{{ last_edited.type }}">
+                            [{{ last_edited.type|title }}] {{ last_edited.title }}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journal Entry -->
+            <div class="form-group">
+                <label for="content" class="form-label">Journal Entry</label>
+                <textarea class="form-control" id="content" name="content" 
+                        rows="5" required></textarea>
+            </div>
+
+            <!-- GitHub URL -->
+            <div class="form-group">
+                <label for="github_url" class="form-label">GitHub URL</label>
+                <input type="url" class="form-control" id="github_url" 
+                       name="github_url">
+            </div>
+
+            <!-- Attachment -->
+            <div class="form-group">
+                <label for="attachment" class="form-label">Attachment</label>
+                <div class="form-file">
+                    <input type="file" class="form-file-input" id="attachment" name="attachment">
+                    <label class="form-file-label" for="attachment">
+                        <i class="fas fa-upload"></i>
+                        <span>Choose a file...</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('main.admin_journal') }}" 
+                   class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Create Entry</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('content_search');
+    const hiddenInput = document.getElementById('content_id');
+    const dropdownMenu = document.getElementById('search_results');
+    const allContent = {{ content|tojson|safe }};
+    
+    // Initialize with last edited content if available
+    {% if last_edited %}
+    const lastEditedType = {{ last_edited.type|tojson|safe }};
+    const lastEditedTitle = {{ last_edited.title|tojson|safe }};
+    searchInput.value = `[${lastEditedType.charAt(0).toUpperCase() + lastEditedType.slice(1)}] ${lastEditedTitle}`;
+    {% endif %}
+
+    function filterContent(query) {
+        return allContent.filter(item => {
+            const searchStr = `${item.type} ${item.title}`.toLowerCase();
+            return searchStr.includes(query.toLowerCase());
+        }).slice(0, 5); // Limit to 5 results
+    }
+
+    function updateDropdown(results) {
+        dropdownMenu.innerHTML = results.map(item => `
+            <button type="button" 
+                    class="form-dropdown-item" 
+                    data-id="${item.id}"
+                    data-title="${item.title}"
+                    data-type="${item.type}">
+                [${item.type.charAt(0).toUpperCase() + item.type.slice(1)}] ${item.title}
+            </button>
+        `).join('');
+    }
+
+    searchInput.addEventListener('focus', () => {
+        dropdownMenu.classList.add('show');
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value;
+        const results = filterContent(query);
+        updateDropdown(results);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('form-dropdown-item')) {
+            const id = e.target.dataset.id;
+            const type = e.target.dataset.type;
+            const title = e.target.dataset.title;
+            
+            hiddenInput.value = id;
+            searchInput.value = `[${type.charAt(0).toUpperCase() + type.slice(1)}] ${title}`;
+            dropdownMenu.classList.remove('show');
+        } else if (!searchInput.contains(e.target)) {
+            dropdownMenu.classList.remove('show');
+        }
+    });
+});
+</script>
+{% endblock %} 

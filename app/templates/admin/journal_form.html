@@ -1,0 +1,399 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2 class="form-card-title">
+            {% if journal %}Edit Journal Entry{% else %}Create Journal Entry{% endif %}
+        </h2>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.csrf_token }}
+            <!-- Content Search -->
+            <div class="form-group">
+                <label for="content_search" class="form-label">Link to Content</label>
+                <div class="form-dropdown">
+                    <input type="text" 
+                           class="form-control" 
+                           id="content_search" 
+                           placeholder="Search content..."
+                           autocomplete="off">
+                    <input type="hidden" 
+                           id="content_id" 
+                           name="content_id" 
+                           value="{{ current_content.id if current_content else '' }}" 
+                           required>
+                    <div class="form-dropdown-menu" id="search_results">
+                        {% if current_content %}
+                        <button type="button" 
+                                class="form-dropdown-item selected" 
+                                data-id="{{ current_content.id }}"
+                                data-title="{{ current_content.title }}"
+                                data-type="{{ current_content.type }}">
+                            [{{ current_content.type|title }}] {{ current_content.title }}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journal Entry -->
+            <div class="form-group">
+                <label for="content" class="form-label">Journal Entry</label>
+                <textarea class="form-control" id="content" name="content" 
+                          rows="5" required>{% if journal %}{{ journal.content }}{% endif %}</textarea>
+            </div>
+
+            <!-- GitHub URL -->
+            <div class="form-group">
+                <label for="github_url" class="form-label">GitHub URL</label>
+                <input type="url" class="form-control" id="github_url" 
+                       name="github_url" value="{% if journal %}{{ journal.github_url }}{% endif %}">
+            </div>
+            
+            <!-- Journal Date -->
+            <div class="form-group">
+                <label for="journal_date" class="form-label">Journal Date</label>
+                <input type="date" class="form-control" id="journal_date" 
+                       name="journal_date" value="{{ current_date }}">
+            </div>
+
+            <!-- Attachment -->
+            <div class="form-group">
+                <label for="attachment" class="form-label">Attachment(s)</label>
+                {% if journal and journal.attachments %}
+                    {% set attachments = journal.attachments | safe %}
+                    {% set att_list = attachments | loads %}
+                    <div class="attachment-previews" style="display:flex; gap:10px; flex-wrap:wrap;">
+                        {% for att in att_list %}
+                            <div class="form-attachment-preview">
+                                <a href="{{ url_for('static', filename='uploads/' ~ att) }}" target="_blank" class="btn btn-outline-secondary">
+                                    <i class="fas fa-paperclip"></i> {{ att }}
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-file">
+                    <input type="file" class="form-file-input" id="attachment" name="attachment" multiple>
+                    <label class="form-file-label" for="attachment">
+                        <i class="fas fa-upload"></i>
+                        <span>Choose file(s)...</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Journal Images Carousel Field -->
+            <div class="form-group">
+                <label for="journal_images">Images</label>
+                <div id="image-carousel-container" class="image-carousel" style="display: flex; gap: 10px; overflow-x: auto; align-items: center;">
+                    {% if journal and journal.images %}
+                        {% set images = journal.images | safe %}
+                        {% set images_list = images | loads %}
+                        {% for img in images_list %}
+                            <div class="carousel-item" draggable="true" style="position: relative; width: 100px; height: 100px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+                                <img src="{{ img.url }}" alt="{{ img.caption or '' }}" style="max-width: 100%; max-height: 100%;">
+                                <button type="button" class="remove-image-button" style="position: absolute; top: 2px; right: 2px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">x</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    <!-- Plus button for adding new image -->
+                    <div class="carousel-plus" id="carousel-plus" style="cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 4px;">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </div>
+                <!-- Hidden input to store JSON array of images -->
+                <input type="hidden" name="images" id="journal_images" value='{{ journal.images if journal and journal.images else "[]" }}'>
+                <!-- Hidden file input for image upload -->
+                <input type="file" id="journal-image-upload-input" accept="image/*" style="display: none;">
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('main.admin_journal') }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if journal %}Save Changes{% else %}Create Entry{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('content_search');
+    const hiddenInput = document.getElementById('content_id');
+    const dropdownMenu = document.getElementById('search_results');
+    const allContent = {{ content|tojson|safe }};
+    
+    // Initialize the search input with the currently linked content if available.
+    {% if current_content %}
+    searchInput.value = `[{{ current_content.type|capitalize }}] {{ current_content.title }}`;
+    {% endif %}
+
+    function filterContent(query) {
+        return allContent.filter(item => {
+            const searchStr = `${item.type} ${item.title}`.toLowerCase();
+            return searchStr.includes(query.toLowerCase());
+        }).slice(0, 5);
+    }
+
+    function updateDropdown(results) {
+        dropdownMenu.innerHTML = results.map(item => `
+            <button type="button" 
+                    class="form-dropdown-item" 
+                    data-id="${item.id}" 
+                    data-title="${item.title}" 
+                    data-type="${item.type}">
+                [${item.type.charAt(0).toUpperCase() + item.type.slice(1)}] ${item.title}
+            </button>
+        `).join('');
+    }
+
+    searchInput.addEventListener('focus', () => {
+        dropdownMenu.classList.add('show');
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value;
+        const results = filterContent(query);
+        updateDropdown(results);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('form-dropdown-item')) {
+            const id = e.target.dataset.id;
+            const type = e.target.dataset.type;
+            const title = e.target.dataset.title;
+            
+            hiddenInput.value = id;
+            searchInput.value = `[${type.charAt(0).toUpperCase() + type.slice(1)}] ${title}`;
+            dropdownMenu.classList.remove('show');
+        } else if (!searchInput.contains(e.target)) {
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    const carouselContainer = document.getElementById('image-carousel-container');
+    const carouselPlus = document.getElementById('carousel-plus');
+    const hiddenImagesInput = document.getElementById('journal_images');
+    const imageUploadInput = document.getElementById('journal-image-upload-input');
+
+    // Initialize images array from hidden input
+    let imagesArray;
+    try {
+        imagesArray = JSON.parse(hiddenImagesInput.value) || [];
+    } catch(e) {
+        imagesArray = [];
+    }
+
+    // Update the hidden input with the current imagesArray JSON
+    function updateImagesInput() {
+        hiddenImagesInput.value = JSON.stringify(imagesArray);
+    }
+
+    // Creates and returns a new carousel item element representing an image
+    function createCarouselItem(imageObject) {
+        const item = document.createElement('div');
+        item.className = 'carousel-item';
+        item.setAttribute('draggable', 'true');
+        item.style.position = 'relative';
+        item.style.width = '100px';
+        item.style.height = '100px';
+        item.style.border = '1px solid #ccc';
+        item.style.borderRadius = '4px';
+        item.style.overflow = 'hidden';
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.justifyContent = 'center';
+        item.style.cursor = 'pointer';
+        item.style.flexShrink = '0';
+        
+        const img = document.createElement('img');
+        img.src = imageObject.url;
+        img.alt = imageObject.caption || '';
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        item.appendChild(img);
+
+        // Remove button (small "x" in the corner)
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-image-button';
+        removeBtn.textContent = 'x';
+        removeBtn.style.position = 'absolute';
+        removeBtn.style.top = '2px';
+        removeBtn.style.right = '2px';
+        removeBtn.style.background = 'red';
+        removeBtn.style.color = 'white';
+        removeBtn.style.border = 'none';
+        removeBtn.style.borderRadius = '50%';
+        removeBtn.style.width = '20px';
+        removeBtn.style.height = '20px';
+        removeBtn.style.cursor = 'pointer';
+        item.appendChild(removeBtn);
+
+        // When clicking on the image itself, open a modal preview
+        item.addEventListener('click', function(e) {
+            if(e.target === removeBtn) return;
+            showImageModal(imageObject);
+        });
+
+        // Remove image handler
+        removeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const items = Array.from(carouselContainer.querySelectorAll('.carousel-item'));
+            const index = items.indexOf(item);
+            if(index > -1) {
+                imagesArray.splice(index, 1);
+                updateImagesInput();
+                item.remove();
+            }
+        });
+
+        // Drag and drop events for reordering
+        item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', '');
+            item.classList.add('dragging');
+        });
+        item.addEventListener('dragend', function(e) {
+            item.classList.remove('dragging');
+        });
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+        });
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const draggingItem = carouselContainer.querySelector('.dragging');
+            if(draggingItem && draggingItem !== item) {
+                const items = Array.from(carouselContainer.querySelectorAll('.carousel-item'));
+                const fromIndex = items.indexOf(draggingItem);
+                const toIndex = items.indexOf(item);
+                if(fromIndex > -1 && toIndex > -1) {
+                    const movedItem = imagesArray.splice(fromIndex, 1)[0];
+                    imagesArray.splice(toIndex, 0, movedItem);
+                    updateImagesInput();
+                    // Reorder DOM (insert before the drop target)
+                    if(toIndex < items.length) {
+                        carouselContainer.insertBefore(draggingItem, item);
+                    } else {
+                        carouselContainer.appendChild(draggingItem);
+                    }
+                }
+            }
+        });
+
+        return item;
+    }
+
+    // Displays a simple modal preview of the selected image
+    function showImageModal(imageObject) {
+        let modal = document.querySelector('.image-modal');
+        if(!modal) {
+            modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.style.display = 'flex';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.background = 'rgba(0,0,0,0.9)';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            modalContent.style.position = 'relative';
+            modalContent.style.background = 'white';
+            modalContent.style.padding = '1rem';
+            modalContent.style.borderRadius = '8px';
+            modalContent.style.maxWidth = '90%';
+            modalContent.style.maxHeight = '90vh';
+            
+            const modalImg = document.createElement('img');
+            modalImg.style.maxWidth = '100%';
+            modalImg.style.maxHeight = '100%';
+            modalContent.appendChild(modalImg);
+            
+            const closeButton = document.createElement('span');
+            closeButton.className = 'close-modal';
+            closeButton.textContent = '×';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '15px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.fontSize = '28px';
+            closeButton.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            modalContent.appendChild(closeButton);
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+        }
+        const modalImg = modal.querySelector('img');
+        modalImg.src = imageObject.url;
+        modal.style.display = 'flex';
+    }
+
+    // When the plus button is clicked, trigger the hidden file input
+    carouselPlus.addEventListener('click', function() {
+        imageUploadInput.click();
+    });
+
+    // When a file is selected, upload via your /upload-image endpoint
+    imageUploadInput.addEventListener('change', async function() {
+        if(this.files && this.files[0]) {
+            const file = this.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // Append the CSRF token from the hidden input in your form
+            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+            formData.append('csrf_token', csrfToken);
+
+            try {
+                const response = await fetch('/upload-image', {
+                    method: 'POST',
+                    body: formData
+                });
+                let data;
+                // Check if response has a JSON content type
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    data = await response.json();
+                } else {
+                    // If not JSON, get the text (which might be an error message or HTML)
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Upload failed');
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Upload failed');
+                }
+
+                if (data.url) {
+                    const newImage = { url: data.url, caption: '' };
+                    imagesArray.push(newImage);
+                    updateImagesInput();
+                    const newItem = createCarouselItem(newImage);
+                    carouselContainer.insertBefore(newItem, carouselPlus);
+                } else {
+                    throw new Error('No image URL in response');
+                }
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                alert('Failed to upload image: ' + error.message);
+            }
+        }
+        this.value = ''; // Reset file input
+    });
+
+    // (Re)initialize any existing items from the imagesArray
+    Array.from(carouselContainer.querySelectorAll('.carousel-item')).forEach(item => item.remove());
+    imagesArray.forEach(imageObject => {
+        const item = createCarouselItem(imageObject);
+        carouselContainer.insertBefore(item, carouselPlus);
+    });
+});
+</script>
+{% endblock %} 

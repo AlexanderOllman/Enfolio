@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8">Add New Content</h2>
+        
+        <form method="POST" class="space-y-6">
+            <!-- Content Type Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Content Type</label>
+                <select name="type" id="contentType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]" onchange="showRelevantFields()">
+                    <option value="project">Project</option>
+                    <option value="blog">Blog Post</option>
+                    <option value="experience">Experience</option>
+                </select>
+            </div>
+
+            <!-- Common Fields -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Description</label>
+                <textarea name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Image URL</label>
+                <input type="url" name="image_url" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]">
+            </div>
+
+            <!-- Project Fields -->
+            <div id="projectFields" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">GitHub URL</label>
+                    <input type="url" name="github_url" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Live URL</label>
+                    <input type="url" name="live_url" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Technologies (comma-separated)</label>
+                    <input type="text" name="technologies" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]">
+                </div>
+            </div>
+
+            <!-- Experience Fields -->
+            <div id="experienceFields" class="space-y-6 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Company</label>
+                    <input type="text" name="company" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Position</label>
+                    <input type="text" name="position" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Start Date</label>
+                        <input type="date" name="start_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">End Date</label>
+                        <input type="date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blog Fields -->
+            <div id="blogFields" class="space-y-6 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Content</label>
+                    <textarea name="content" rows="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#004225] focus:ring-[#004225]"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#004225] hover:bg-[#005231] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004225]">
+                Add Content
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function showRelevantFields() {
+    const type = document.getElementById('contentType').value;
+    const projectFields = document.getElementById('projectFields');
+    const blogFields = document.getElementById('blogFields');
+    const experienceFields = document.getElementById('experienceFields');
+    
+    projectFields.classList.add('hidden');
+    blogFields.classList.add('hidden');
+    experienceFields.classList.add('hidden');
+    
+    if (type === 'project') {
+        projectFields.classList.remove('hidden');
+    } else if (type === 'blog') {
+        blogFields.classList.remove('hidden');
+    } else if (type === 'experience') {
+        experienceFields.classList.remove('hidden');
+    }
+}
+</script>
+{% endblock %} 

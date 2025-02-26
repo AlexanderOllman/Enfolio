@@ -1,0 +1,195 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<div class="admin-content-container">
+    <div class="admin-section-header">
+        <div class="admin-section-left">
+            <h2 class="admin-section-title">Blog Posts</h2>
+            <div class="view-toggle-group">
+                <button class="view-toggle-btn active" data-view="grid">
+                    <i class="bi bi-grid"></i>
+                </button>
+                <button class="view-toggle-btn" data-view="table">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+        </div>
+        <a href="{{ url_for('main.create_new') }}?type=blog" class="admin-btn admin-btn-primary">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add New Post</span>
+        </a>
+    </div>
+
+    <!-- Add table view similar to projects.html -->
+    <div class="admin-table-wrapper" id="table-view" style="display: none;">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th class="sortable" data-sort="title">Title <i class="bi bi-arrow-down-up"></i></th>
+                    <th class="sortable" data-sort="date">Date <i class="bi bi-arrow-down-up"></i></th>
+                    <th>Status</th>
+                    <th>Tags</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                // ... table rows for blog posts ...
+            </tbody>
+        </table>
+    </div>
+
+    {% if blog_posts %}
+    <div class="admin-grid admin-grid-2">
+        {% for post in blog_posts %}
+        <div class="admin-card blog-card">
+            {% if post.image_url %}
+            <img src="{{ post.image_url }}" 
+                 alt="{{ post.title }}" 
+                 class="blog-card-image">
+            {% endif %}
+            
+            <div class="card-body">
+                <div class="blog-card-meta">
+                    <i class="bi bi-calendar"></i>
+                    <time datetime="{{ post.date_created.isoformat() }}">
+                        {{ post.date_created.strftime('%B %d, %Y') }}
+                    </time>
+                    {% if post.status %}
+                    <span class="admin-badge admin-badge-{{ post.status }}">
+                        {{ post.status|title }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <h3 class="card-title">{{ post.title }}</h3>
+                <p class="card-text">{{ post.description }}</p>
+
+                <div class="blog-card-tags">
+                    {% if post.tags %}
+                        {% for tag in post.tags.split(',') %}
+                        <span class="blog-tag">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="admin-card-actions">
+                    <a href="{{ url_for('main.edit_content', id=post.id) }}" 
+                       class="admin-btn admin-btn-secondary">
+                        <i class="bi bi-pencil"></i>
+                        <span>Edit</span>
+                    </a>
+                    <button type="button" 
+                            class="admin-btn admin-btn-danger"
+                            onclick="deleteBlogPost('{{ post.id }}')">
+                        <i class="bi bi-trash"></i>
+                        <span>Delete</span>
+                    </button>
+                    <a href="{{ url_for('main.preview_blog', id=post.id) }}" 
+                       class="admin-btn admin-btn-primary"
+                       target="_blank">
+                        <i class="bi bi-eye"></i>
+                        <span>Preview</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination %}
+    <div class="admin-pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('main.admin_blog', page=pagination.prev_num) }}" 
+           class="admin-btn admin-btn-secondary">
+            <i class="bi bi-chevron-left"></i>
+            <span>Previous</span>
+        </a>
+        {% endif %}
+
+        <span class="admin-pagination-info">
+            Page {{ pagination.page }} of {{ pagination.pages }}
+        </span>
+
+        {% if pagination.has_next %}
+        <a href="{{ url_for('main.admin_blog', page=pagination.next_num) }}" 
+           class="admin-btn admin-btn-secondary">
+            <span>Next</span>
+            <i class="bi bi-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="admin-empty-state">
+        <i class="bi bi-file-text"></i>
+        <p>No blog posts found. Write your first post!</p>
+        <a href="{{ url_for('main.create_new') }}?type=blog" 
+           class="admin-btn admin-btn-primary">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add New Post</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Blog Categories/Tags Management -->
+<div class="admin-content-container">
+    <div class="admin-section-header">
+        <h3 class="admin-section-title">Categories & Tags</h3>
+        <button type="button" 
+                class="admin-btn admin-btn-primary"
+                onclick="openTagManager()">
+            <i class="bi bi-tags"></i>
+            <span>Manage Tags</span>
+        </button>
+    </div>
+
+    <div class="admin-tags-container">
+        {% for tag in tags %}
+        <div class="admin-tag">
+            <span>{{ tag.name }}</span>
+            <span class="admin-tag-count">{{ tag.count }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<script>
+function deleteBlogPost(id) {
+    if (confirm('Are you sure you want to delete this blog post?')) {
+        fetch(`/admin/content/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+}
+
+function openTagManager() {
+    // Implement tag management modal/functionality
+    alert('Tag management functionality coming soon!');
+}
+
+// Search functionality
+let searchTimeout;
+const searchInput = document.getElementById('searchBlog');
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchTerm = e.target.value;
+            window.location.href = `{{ url_for('main.admin_blog') }}?search=${searchTerm}`;
+        }, 500);
+    });
+}
+</script>
+{% endblock %} 

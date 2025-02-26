@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    {% block styles %}
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap" rel="stylesheet">
+    {% endblock %}
+</head>
+<body>
+    <div class="admin-layout" id="adminLayout">
+        <aside class="admin-sidebar collapsed" id="adminSidebar">
+            <a href="{{ url_for('main.admin_home') }}" class="admin-logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+                <span>Enfolio</span>
+            </a>
+            <nav>
+                <a href="{{ url_for('main.admin_home') }}" class="nav-link {% if request.endpoint == 'main.admin_home' %}active{% endif %}">
+                    <i class="bi bi-house"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('main.admin_projects') }}" class="nav-link {% if request.endpoint == 'main.admin_projects' %}active{% endif %}">
+                    <i class="bi bi-code-square"></i>
+                    <span>Projects</span>
+                </a>
+                <a href="{{ url_for('main.admin_experience') }}" class="nav-link {% if request.endpoint == 'main.admin_experience' %}active{% endif %}">
+                    <i class="bi bi-briefcase"></i>
+                    <span>Experience</span>
+                </a>
+                <a href="{{ url_for('main.admin_blog') }}" class="nav-link {% if request.endpoint == 'main.admin_blog' %}active{% endif %}">
+                    <i class="bi bi-file-text"></i>
+                    <span>Blog</span>
+                </a>
+                <a href="{{ url_for('main.admin_journal') }}" class="nav-link {% if request.endpoint == 'main.admin_journal' %}active{% endif %}">
+                    <i class="bi bi-journal"></i>
+                    <span>Journal</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-content-wrapper">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Base Scripts -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const layout = document.getElementById('adminLayout');
+        const sidebar = document.getElementById('adminSidebar');
+        
+        // Check for saved state
+        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (sidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            layout.classList.add('sidebar-collapsed');
+        }
+        
+        // Add double-click handler to toggle sidebar
+        sidebar.addEventListener('dblclick', function(e) {
+            sidebar.classList.toggle('collapsed');
+            layout.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        });
+
+        // First hover protection
+        let hasLeftSidebar = false;
+        let initialLoad = true;
+
+        // Check if mouse is initially over sidebar
+        const mouseX = event?.clientX ?? 0;
+        const sidebarWidth = sidebar.getBoundingClientRect().width;
+        const isMouseOverSidebar = mouseX <= sidebarWidth;
+
+        if (!isMouseOverSidebar) {
+            hasLeftSidebar = true;
+        }
+
+        // Add mouseleave event to track when cursor leaves sidebar
+        sidebar.addEventListener('mouseleave', function() {
+            hasLeftSidebar = true;
+            initialLoad = false;
+        });
+
+        // Override the hover expansion with classes instead of CSS
+        sidebar.addEventListener('mouseenter', function() {
+            if (hasLeftSidebar || !initialLoad) {
+                if (sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.add('hover-expanded');
+                }
+            }
+        });
+
+        sidebar.addEventListener('mouseleave', function() {
+            sidebar.classList.remove('hover-expanded');
+        });
+    });
+    </script>
+
+    <!-- Page Specific Scripts -->
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

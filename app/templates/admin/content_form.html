@@ -1,0 +1,188 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-layout">
+            <div class="form-fields-column">
+                <div class="form-card">
+                    <!-- Dynamic title based on whether editing or creating -->
+                    <h2 class="form-card-title">
+                        {% if content %}
+                            Edit {{ content.type|title }}
+                        {% else %}
+                            Create New Content
+                        {% endif %}
+                    </h2>
+
+                    {{ form.csrf_token }}
+
+                    <!-- Content Type Selection (only show when creating new) -->
+                    {% if not content %}
+                    <div class="form-group">
+                        <label for="type" class="form-label">Content Type</label>
+                        <select class="form-control form-select" id="type" name="type" required>
+                            <option value="">Select content type...</option>
+                            <option value="project" {% if request.args.get('type') == 'project' %}selected{% endif %}>Project</option>
+                            <option value="experience" {% if request.args.get('type') == 'experience' %}selected{% endif %}>Experience</option>
+                            <option value="blog" {% if request.args.get('type') == 'blog' %}selected{% endif %}>Blog Post</option>
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <!-- Common Fields -->
+                    <div class="form-group">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ content.title if content else '' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                rows="3" required>{{ content.description if content else '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="image" class="form-label">Image</label>
+                        {% if content and content.image_url %}
+                        <div class="form-image-preview">
+                            <img src="{{ content.image_url }}" alt="Current image" 
+                                 style="max-width: 200px; height: auto;">
+                        </div>
+                        {% endif %}
+                        <div class="form-file">
+                            <input type="file" class="form-file-input" id="image" name="image">
+                            <label class="form-file-label" for="image">
+                                <i class="fas fa-upload"></i>
+                                <span>Choose a file...</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Type-specific fields -->
+                    <div class="project-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="technologies" class="form-label">Technologies Used</label>
+                            <input type="text" class="form-control" id="technologies" 
+                                   name="technologies" 
+                                   value="{{ content.technologies if content else '' }}"
+                                   placeholder="e.g., Python, React, Docker">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="github_url" class="form-label">GitHub URL</label>
+                            <input type="url" class="form-control" id="github_url" 
+                                   name="github_url" 
+                                   value="{{ content.github_url if content else '' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="live_url" class="form-label">Live URL</label>
+                            <input type="url" class="form-control" id="live_url" 
+                                   name="live_url" 
+                                   value="{{ content.live_url if content else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="experience-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="company" class="form-label">Company</label>
+                            <input type="text" class="form-control" id="company" 
+                                   name="company" 
+                                   value="{{ content.company if content else '' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="position" class="form-label">Position</label>
+                            <input type="text" class="form-control" id="position" 
+                                   name="position" 
+                                   value="{{ content.position if content else '' }}">
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" 
+                                       name="start_date" 
+                                       value="{{ content.start_date.strftime('%Y-%m-%d') if content and content.start_date else '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end_date" 
+                                       name="end_date" 
+                                       value="{{ content.end_date.strftime('%Y-%m-%d') if content and content.end_date else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="blog-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="content" class="form-label">Content</label>
+                            <textarea class="form-control" id="content" 
+                                    name="content" 
+                                    rows="10">{{ content.content if content else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        {% if content %}
+                            <a href="{{ url_for('main.admin_' + (content.type + 's' if content.type == 'project' else content.type)) }}" 
+                               class="btn btn-outline-secondary">Cancel</a>
+                        {% else %}
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancel</a>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary">
+                            {{ 'Save Changes' if content else 'Create Content' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="form-builder-column">
+                <div class="form-card">
+                    <h2 class="form-card-title">Page Content</h2>
+                    {% include 'components/_page_content.html' with context %}
+                </div>
+            </div>
+        </div>
+    </form>
+
+<script>
+function updateFieldVisibility(contentType) {
+    // Hide all specific fields
+    document.querySelector('.project-fields').style.display = 'none';
+    document.querySelector('.experience-fields').style.display = 'none';
+    document.querySelector('.blog-fields').style.display = 'none';
+
+    // Show fields based on selected/current type
+    if (contentType === 'project') {
+        document.querySelector('.project-fields').style.display = 'block';
+    } else if (contentType === 'experience') {
+        document.querySelector('.experience-fields').style.display = 'block';
+    } else if (contentType === 'blog') {
+        document.querySelector('.blog-fields').style.display = 'block';
+    }
+}
+
+// For create form: Handle type selection changes
+const typeSelect = document.getElementById('type');
+if (typeSelect) {
+    typeSelect.addEventListener('change', function() {
+        updateFieldVisibility(this.value);
+    });
+    
+    // Trigger on page load if type is pre-selected
+    window.addEventListener('load', function() {
+        updateFieldVisibility(typeSelect.value);
+    });
+}
+
+// For edit form: Show correct fields on load
+{% if content %}
+    window.addEventListener('load', function() {
+        updateFieldVisibility('{{ content.type }}');
+    });
+{% endif %}
+</script>
+{% endblock %} 

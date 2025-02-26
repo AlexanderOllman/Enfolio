@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    
+    {% block styles %}
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    {% endblock %}
+</head>
+<body>
+    <div class="main-layout">
+        <header class="main-header">
+            <div class="header-content">
+                <a href="{{ url_for('main.index') }}" class="logo">
+                    Alex Ollman
+                </a>
+                <nav>
+                    <a href="{{ url_for('main.index') }}">Home</a>
+                    <a href="#projects">Projects</a>
+                    <a href="#experience">Experience</a>
+                    <a href="#blog">Blog</a>
+                    <a href="#contact">Contact</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <div>
+                    <h3>Alex Ollman</h3>
+                    <p>Full Stack Developer | Problem Solver | Tech Enthusiast</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <nav>
+                        <a href="#projects">Projects</a>
+                        <a href="#experience">Experience</a>
+                        <a href="#blog">Blog</a>
+                        <a href="#contact">Contact</a>
+                    </nav>
+                </div>
+                <div>
+                    <h4>Connect</h4>
+                    <nav>
+                        <a href="https://github.com/yourusername">GitHub</a>
+                        <a href="https://linkedin.com/in/yourusername">LinkedIn</a>
+                    </nav>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html> 

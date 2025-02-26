@@ -1,0 +1,210 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<div class="admin-content-container">
+    <div class="admin-section-header">
+        <div class="admin-section-left">
+            <h2 class="admin-section-title">Projects</h2>
+            <div class="view-toggle-group">
+                <button class="view-toggle-btn active" data-view="grid">
+                    <i class="bi bi-grid"></i>
+                </button>
+                <button class="view-toggle-btn" data-view="table">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+        </div>
+        <a href="{{ url_for('main.create_new') }}?type=project" class="admin-btn admin-btn-primary">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add New Project</span>
+        </a>
+    </div>
+
+    <!-- Table View -->
+    <div class="admin-table-wrapper" id="table-view" style="display: none;">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th class="sortable" data-sort="title">
+                        Title
+                        <i class="bi bi-arrow-down-up"></i>
+                    </th>
+                    <th class="sortable" data-sort="modified">
+                        Last Modified
+                        <i class="bi bi-arrow-down-up"></i>
+                    </th>
+                    <th>Technologies</th>
+                    <th>Links</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if projects %}
+                    {% for project in projects %}
+                    <tr>
+                        <td>
+                            <div class="table-project-title">
+                                {% if project.image_url %}
+                                <img src="{{ project.image_url }}" alt="" class="table-project-image">
+                                {% endif %}
+                                {{ project.title }}
+                            </div>
+                        </td>
+                        <td>{{ project.modified_at|datetime }}</td>
+                        <td>
+                            <div class="table-tech-tags">
+                                {% for tech in project.technologies.split(',')[:3] %}
+                                <span class="project-card-tech-item">{{ tech.strip() }}</span>
+                                {% endfor %}
+                                {% if project.technologies.split(',')|length > 3 %}
+                                <span class="tech-more">+{{ project.technologies.split(',')|length - 3 }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="table-project-links">
+                                {% if project.github_url %}
+                                <a href="{{ project.github_url }}" class="table-link" target="_blank">
+                                    <i class="bi bi-github"></i>
+                                </a>
+                                {% endif %}
+                                {% if project.live_url %}
+                                <a href="{{ project.live_url }}" class="table-link" target="_blank">
+                                    <i class="bi bi-link-45deg"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="{{ url_for('main.preview_project', id=project.id) }}" 
+                                   class="admin-btn admin-btn-circle admin-btn-primary"
+                                   target="_blank">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('main.edit_content', id=project.id) }}" 
+                                   class="admin-btn admin-btn-circle admin-btn-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" 
+                                        class="admin-btn admin-btn-circle admin-btn-danger"
+                                        onclick="deleteProject('{{ project.id }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="admin-empty-state">
+                                <p>No projects found</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if projects %}
+    <div class="admin-grid admin-grid-2" id="grid-view">
+        {% for project in projects %}
+        <div class="admin-card project-card">
+            <div class="admin-actions-container">
+                <a href="{{ url_for('main.preview_project', id=project.id) }}" 
+                   class="admin-btn admin-btn-circle admin-btn-primary"
+                   target="_blank">
+                    <i class="bi bi-eye"></i>
+                    <span>Preview</span>
+                </a>
+                <a href="{{ url_for('main.edit_content', id=project.id) }}" 
+                   class="admin-btn admin-btn-circle admin-btn-secondary">
+                    <i class="bi bi-pencil"></i>
+                    <span>Edit</span>
+                </a>
+                <button type="button" 
+                        class="admin-btn admin-btn-circle admin-btn-danger"
+                        onclick="deleteProject('{{ project.id }}')">
+                    <i class="bi bi-trash"></i>
+                    <span>Delete</span>
+                </button>
+            </div>
+            
+            {% if project.image_url %}
+            <img src="{{ project.image_url }}" 
+                 alt="{{ project.title }}" 
+                 class="project-card-image">
+            {% endif %}
+            
+            <div class="card-body">
+                <h3 class="card-title">{{ project.title }}</h3>
+                <p class="card-text">{{ project.description }}</p>
+                
+                {% if project.technologies %}
+                <div class="project-card-tech">
+                    {% for tech in project.technologies.split(',') %}
+                    <span class="project-card-tech-item">{{ tech.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="project-card-links">
+                    {% if project.github_url %}
+                    <a href="{{ project.github_url }}" 
+                       class="card-link" 
+                       target="_blank">
+                        <i class="bi bi-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                    {% endif %}
+                    
+                    {% if project.live_url %}
+                    <a href="{{ project.live_url }}" 
+                       class="card-link" 
+                       target="_blank">
+                        <i class="bi bi-link-45deg"></i>
+                        <span>Live Demo</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="admin-empty-state">
+        <i class="bi bi-code-square"></i>
+        <p>No projects found. Create your first project!</p>
+        <a href="{{ url_for('main.create_new') }}?type=project" 
+           class="admin-btn admin-btn-primary">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add New Project</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<script>
+function deleteProject(id) {
+    if (confirm('Are you sure you want to delete this project?')) {
+        fetch(`/content/${id}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Error deleting project');
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 

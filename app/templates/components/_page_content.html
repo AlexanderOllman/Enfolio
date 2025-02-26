@@ -1,0 +1,881 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/page-content.css') }}">
+
+<div class="page-builder">
+    <div class="editor-main">
+        <div class="editor-toolbar">
+            <button type="button" id="undo-btn" disabled>
+                <i class="fas fa-undo"></i> Undo
+            </button>
+            <button type="button" id="redo-btn" disabled>
+                <i class="fas fa-redo"></i> Redo
+            </button>
+            <button type="button" id="preview-btn">
+                <i class="fas fa-eye"></i> Preview
+            </button>
+        </div>
+
+        <div id="editor-container" class="editor-container">
+            <div class="text-center text-muted page-builder-placeholder">
+                <p>Click anywhere to start writing</p>
+            </div>
+        </div>
+        <input type="hidden" name="page_content" id="page-content" 
+               value='{{ content.page_content|tojson if content and content.page_content else "[]" }}'
+>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editorContainer = document.getElementById('editor-container');
+    const pageContentInput = document.getElementById('page-content');
+    let isOptionsVisible = false;
+    let draggedElement = null;
+    
+    // Add history tracking variables
+    let contentHistory = [];
+    let currentHistoryIndex = -1;
+    const maxHistorySize = 50;  // Limit history size to prevent memory issues
+    
+    // Get undo/redo buttons
+    const undoBtn = document.getElementById('undo-btn');
+    const redoBtn = document.getElementById('redo-btn');
+    
+    // Add keyboard shortcut handlers
+    document.addEventListener('keydown', function(e) {
+        // Check if the user is currently editing text
+        const isEditing = document.activeElement.hasAttribute('contenteditable');
+        
+        // Handle Undo: Ctrl/Cmd + Z
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+            if (!isEditing) {
+                e.preventDefault();
+                undo();
+            }
+        }
+        
+        // Handle Redo: Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+            if (!isEditing) {
+                e.preventDefault();
+                redo();
+            }
+        }
+    });
+    
+    // Add button click handlers
+    undoBtn.addEventListener('click', undo);
+    redoBtn.addEventListener('click', redo);
+    
+    function saveToHistory() {
+        // Get current content
+        const currentContent = document.getElementById('page-content').value;
+        
+        // If we're not at the end of the history, remove future states
+        if (currentHistoryIndex < contentHistory.length - 1) {
+            contentHistory = contentHistory.slice(0, currentHistoryIndex + 1);
+        }
+        
+        // Add new state to history
+        contentHistory.push(currentContent);
+        currentHistoryIndex++;
+        
+        // Limit history size
+        if (contentHistory.length > maxHistorySize) {
+            contentHistory.shift();
+            currentHistoryIndex--;
+        }
+        
+        // Update button states
+        updateUndoRedoButtons();
+    }
+    
+    function undo() {
+        if (currentHistoryIndex > 0) {
+            currentHistoryIndex--;
+            restoreState();
+        }
+    }
+    
+    function redo() {
+        if (currentHistoryIndex < contentHistory.length - 1) {
+            currentHistoryIndex++;
+            restoreState();
+        }
+    }
+    
+    function restoreState() {
+        const content = contentHistory[currentHistoryIndex];
+        document.getElementById('page-content').value = content;
+        
+        // Clear and rebuild the editor content
+        const editorContainer = document.getElementById('editor-container');
+        editorContainer.innerHTML = '';
+        
+        // Parse and restore content
+        try {
+            const parsedContent = JSON.parse(content);
+            if (Array.isArray(parsedContent) && parsedContent.length > 0) {
+                parsedContent.forEach(item => {
+                    if (!item || !item.type) return;
+                    
+                    const element = createElement(item.type);
+                    if (element) {
+                        const contentWrapper = element.querySelector('.content-wrapper');
+                        if (item.type === 'header' || item.type === 'text') {
+                            const editableDiv = contentWrapper.querySelector('[contenteditable]');
+                            if (editableDiv) {
+                                editableDiv.innerHTML = item.content || '';
+                            }
+                        } else if (item.type === 'image' && item.image_url) {
+                            contentWrapper.innerHTML = `
+                                <div class="image-container">
+                                    <img src="${item.image_url}" 
+                                         alt="${item.content || ''}" 
+                                         style="max-width: 100%; height: auto;"
+                                         class="uploaded-image">
+                                    <div class="image-caption" contenteditable="true" placeholder="Add a caption...">${item.caption || ''}</div>
+                                </div>`;
+                        }
+                        editorContainer.appendChild(element);
+                        initializeElement(element);
+                    }
+                });
+            } else {
+                // Show placeholder if no content
+                editorContainer.innerHTML = `
+                    <div class="text-center text-muted page-builder-placeholder">
+                        <p>Click anywhere to start writing</p>
+                    </div>`;
+            }
+        } catch (e) {
+            console.error('Error restoring state:', e);
+        }
+        
+        updateUndoRedoButtons();
+    }
+    
+    function updateUndoRedoButtons() {
+        undoBtn.disabled = currentHistoryIndex <= 0;
+        redoBtn.disabled = currentHistoryIndex >= contentHistory.length - 1;
+    }
+    
+    // Add click handler to container
+    editorContainer.addEventListener('click', function(e) {
+        // Only show options if clicking directly on the container or placeholder
+        if (e.target === editorContainer || 
+            e.target.closest('.page-builder-placeholder') || 
+            e.target.classList.contains('editor-container')) {
+            showElementOptions(e);
+        }
+    });
+
+    function showElementOptions(e) {
+        // Remove any existing popups first
+        const existingPopup = document.querySelector('.element-options-popup');
+        if (existingPopup) {
+            existingPopup.remove();
+            return;
+        }
+
+        // Create popup
+        const popup = document.createElement('div');
+        popup.className = 'element-options-popup';
+        popup.innerHTML = `
+            <div class="element-option" data-element-type="header">
+                <i class="fas fa-heading"></i>
+            </div>
+            <div class="element-option" data-element-type="text">
+                <i class="fas fa-paragraph"></i>
+            </div>
+            <div class="element-option" data-element-type="image">
+                <i class="fas fa-image"></i>
+            </div>
+        `;
+
+        // Get the editor container and its last element
+        const editorContainer = document.getElementById('editor-container');
+        const lastElement = editorContainer.lastElementChild;
+        
+        // Calculate position relative to the editor container
+        const containerRect = editorContainer.getBoundingClientRect();
+        let topPosition;
+        
+        if (lastElement && !lastElement.classList.contains('page-builder-placeholder')) {
+            const lastElementRect = lastElement.getBoundingClientRect();
+            topPosition = lastElementRect.bottom - containerRect.top;
+        } else {
+            // If no elements or only placeholder, position at the top
+            topPosition = 20;
+        }
+
+        // Position the popup
+        popup.style.position = 'absolute';
+        popup.style.top = `${topPosition}px`;
+        
+        // Add popup to the editor container
+        editorContainer.appendChild(popup);
+
+        // Add click handlers for options with explicit popup removal
+        popup.querySelectorAll('.element-option').forEach(option => {
+            option.addEventListener('click', function(optionEvent) {
+                optionEvent.stopPropagation();
+                const elementType = this.getAttribute('data-element-type');
+                
+                // Remove the popup before adding the new element
+                popup.remove();
+                
+                // Then add the new element
+                addElement(elementType);
+            });
+        });
+
+        // Handle clicks outside the popup
+        document.addEventListener('click', function closePopup(event) {
+            if (!popup.contains(event.target) && event.target !== editorContainer) {
+                popup.remove();
+                document.removeEventListener('click', closePopup);
+            }
+        });
+    }
+
+    function addElement(elementType) {
+        const newElement = createElement(elementType);
+        if (!newElement) return;
+
+        // Remove placeholder if it exists
+        const placeholder = editorContainer.querySelector('.page-builder-placeholder');
+        if (placeholder) {
+            placeholder.remove();
+        }
+
+        // Append the new element at the bottom of the editor container
+        editorContainer.appendChild(newElement);
+
+        initializeElement(newElement);
+        updatePageContent();
+
+        // Focus the new element if it's editable
+        const editableContent = newElement.querySelector('[contenteditable="true"]');
+        if (editableContent) {
+            editableContent.focus();
+        }
+    }
+
+    function createElement(elementType) {
+        const element = document.createElement('div');
+        element.className = 'content-element';
+        element.draggable = true;
+        
+        // Create the main content wrapper first
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'content-wrapper';
+        element.appendChild(contentWrapper);
+        
+        /* 
+         * Create left-side controls container for the drag handle and move arrows.
+         */
+        const dragHandleWrapper = document.createElement('div');
+        dragHandleWrapper.className = 'drag-handle-wrapper';
+        
+        // Up arrow button
+        const upArrowButton = document.createElement('button');
+        upArrowButton.type = "button";
+        upArrowButton.className = 'move-arrow move-up';
+        upArrowButton.title = 'Move element up';
+        upArrowButton.innerHTML = `<i class="fas fa-arrow-up"></i>`;
+        dragHandleWrapper.appendChild(upArrowButton);
+        
+        // Drag handle button
+        const dragButton = document.createElement('button');
+        dragButton.type = "button";
+        dragButton.className = 'drag-handle';
+        dragButton.title = 'Drag to reorder';
+        dragButton.innerHTML = `<i class="fas fa-grip-lines"></i>`;
+        dragHandleWrapper.appendChild(dragButton);
+        
+        // Down arrow button
+        const downArrowButton = document.createElement('button');
+        downArrowButton.type = "button";
+        downArrowButton.className = 'move-arrow move-down';
+        downArrowButton.title = 'Move element down';
+        downArrowButton.innerHTML = `<i class="fas fa-arrow-down"></i>`;
+        dragHandleWrapper.appendChild(downArrowButton);
+        
+        /* 
+         * Create right-side controls container for convert and delete functionality
+         */
+        const controlsWrapper = document.createElement('div');
+        controlsWrapper.className = 'element-controls-wrapper';
+        
+        // Convert control
+        const convertButton = document.createElement('button');
+        convertButton.type = "button";
+        convertButton.className = 'convert-handle';
+        convertButton.title = 'Convert element type';
+        convertButton.innerHTML = `<i class="fas fa-exchange-alt"></i>`;
+        controlsWrapper.appendChild(convertButton);
+        
+        // Delete control
+        const deleteButton = document.createElement('button');
+        deleteButton.type = "button";
+        deleteButton.className = 'delete-handle';
+        deleteButton.title = 'Delete element';
+        deleteButton.innerHTML = `<i class="fas fa-trash"></i>`;
+        controlsWrapper.appendChild(deleteButton);
+        
+        /* Add event listeners for the arrow buttons */
+        upArrowButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (element.previousElementSibling) {
+                applyReorderAnimation(() => {
+                    element.parentNode.insertBefore(element, element.previousElementSibling);
+                });
+            }
+        });
+        
+        downArrowButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (element.nextElementSibling) {
+                applyReorderAnimation(() => {
+                    if (element.nextElementSibling.nextSibling) {
+                        element.parentNode.insertBefore(element, element.nextElementSibling.nextSibling);
+                    } else {
+                        element.parentNode.appendChild(element);
+                    }
+                });
+            }
+        });
+        
+        convertButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            showConversionOptions(element);
+        }, { capture: true });
+        
+        // Append both control containers to the element
+        element.appendChild(dragHandleWrapper);
+        element.appendChild(controlsWrapper);
+        
+        // Add the specific content based on element type
+        switch(elementType) {
+            case 'header':
+                contentWrapper.innerHTML = '<div contenteditable="true" class="header-preview" data-heading-type="h2">New Heading</div>';
+                break;
+            case 'text':
+                contentWrapper.innerHTML = '<div contenteditable="true" class="text-editor">Start writing...</div>';
+                break;
+            case 'image':
+                contentWrapper.innerHTML = `
+                    <div class="image-upload-container">
+                        <input type="file" accept="image/*" style="display: none;">
+                        <div class="upload-placeholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload image</p>
+                        </div>
+                    </div>`;
+                break;
+            default:
+                return null;
+        }
+        
+        return element;
+    }
+
+    function initializeElement(element) {
+        // Initialize contenteditable elements
+        const editableContent = element.querySelector('[contenteditable="true"]');
+        if (editableContent) {
+            editableContent.addEventListener('focus', function() {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(this);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            });
+            
+            // Prevent drag initialization on contenteditable elements
+            editableContent.addEventListener('mousedown', (e) => {
+                element.draggable = false;
+            });
+            
+            editableContent.addEventListener('blur', () => {
+                element.draggable = true;
+            });
+        }
+
+        // Handle drag and drop
+        const dragHandle = element.querySelector('.drag-handle');
+        if (dragHandle) {
+            element.draggable = false;
+            
+            dragHandle.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                element.draggable = true;
+            });
+            
+            dragHandle.addEventListener('pointerup', (e => {
+                e.stopPropagation();
+                element.draggable = false;
+            }));
+        }
+
+        // Add drag and drop handlers to the element
+        element.addEventListener('dragstart', handleDragStart);
+        element.addEventListener('dragend', handleDragEnd);
+        element.addEventListener('dragover', handleDragOver);
+        element.addEventListener('drop', handleDrop);
+
+        // Handle image uploads
+        const imageUpload = element.querySelector('.image-upload-container');
+        if (imageUpload) {
+            const fileInput = imageUpload.querySelector('input[type="file"]');
+            if (fileInput) {
+                const uploadPlaceholder = imageUpload.querySelector('.upload-placeholder');
+                // Make the entire container clickable
+                imageUpload.addEventListener('click', () => fileInput.click());
+                
+                fileInput.addEventListener('change', async function(e) {
+                    if (this.files && this.files[0]) {
+                        const file = this.files[0];
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        // Add CSRF token to the request
+                        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+                        
+                        // Show loading state
+                        uploadPlaceholder.innerHTML = `
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Uploading...</p>`;
+                        
+                        try {
+                            const response = await fetch('/upload-image', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': csrfToken
+                                },
+                                body: formData,
+                                credentials: 'same-origin'
+                            });
+                            
+                            if (!response.ok) {
+                                const errorData = await response.json();
+                                throw new Error(errorData.error || 'Upload failed');
+                            }
+                            
+                            const data = await response.json();
+                            const contentWrapper = element.querySelector('.content-wrapper');
+                            
+                            // Update the content wrapper with the new image
+                            if (data.url) {
+                                contentWrapper.innerHTML = `
+                                    <div class="image-container">
+                                        <img src="${data.url}" 
+                                             alt="" 
+                                             style="max-width: 100%; height: auto;"
+                                             class="uploaded-image">
+                                        <div class="image-caption" contenteditable="true" placeholder="Add a caption..."></div>
+                                        <div class="image-actions">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-image">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>`;
+                                
+                                // Add remove image handler
+                                const removeBtn = contentWrapper.querySelector('.remove-image');
+                                if (removeBtn) {
+                                    removeBtn.addEventListener('click', function() {
+                                        contentWrapper.innerHTML = createElement('image').querySelector('.content-wrapper').innerHTML;
+                                        initializeElement(element);
+                                        updatePageContent();
+                                    });
+                                }
+                                
+                                // Update the page content after successful upload
+                                updatePageContent();
+                            } else {
+                                throw new Error('No image URL in response');
+                            }
+                        } catch (error) {
+                            console.error('Error uploading image:', error);
+                            alert('Failed to upload image: ' + error.message);
+                            
+                            // Reset to upload placeholder on error
+                            uploadPlaceholder.innerHTML = `
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to upload image</p>`;
+                        }
+                    }
+                });
+            }
+        }
+
+        // Handle image click for preview
+        const uploadedImage = element.querySelector('.uploaded-image');
+        if (uploadedImage) {
+            uploadedImage.style.cursor = 'pointer';
+            uploadedImage.addEventListener('click', function() {
+                const imageContainer = element.querySelector('.image-container');
+                const caption = imageContainer.querySelector('.image-caption');
+                
+                const modal = document.querySelector('.image-modal');
+                const modalImg = modal.querySelector('img');
+                const modalCaption = modal.querySelector('.modal-caption');
+                
+                modalImg.src = this.src;
+                modalCaption.innerHTML = caption.innerHTML;
+                modal.style.display = 'flex';
+                
+                // Sync caption changes back to the main view
+                modalCaption.addEventListener('input', function() {
+                    caption.innerHTML = this.innerHTML;
+                    updatePageContent();
+                });
+            });
+        }
+
+        // Add delete handler
+        const deleteHandle = element.querySelector('.delete-handle');
+        if (deleteHandle) {
+            deleteHandle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                element.remove();
+                updatePageContent();
+            });
+        }
+    }
+
+    function handleDragStart(e) {
+        draggedElement = this;
+        this.classList.add('dragging');
+        editorContainer.classList.add('dragging-active');
+        
+        // Set the drag data
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.innerHTML);
+        
+        // Create ghost image with reduced opacity
+        const ghost = this.cloneNode(true);
+        ghost.style.opacity = '0.5';
+        ghost.style.position = 'absolute';
+        ghost.style.left = '-9999px';
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, 0, 0);
+        
+        // Clean up ghost after drag
+        setTimeout(() => {
+            document.body.removeChild(ghost);
+        }, 0);
+
+        // Add placeholder styles to original element
+        this.style.opacity = '0.4';
+    }
+
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        editorContainer.classList.remove('dragging-active');
+        this.style.opacity = ''; // Reset opacity
+        
+        // Remove all drop indicators
+        document.querySelectorAll('.drop-indicator').forEach(indicator => {
+            indicator.remove();
+        });
+        
+        draggedElement = null;
+        updatePageContent();
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        
+        if (!draggedElement || draggedElement === this) return;
+
+        const rect = this.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+        
+        // Remove existing indicators and reset positions
+        document.querySelectorAll('.drop-indicator').forEach(indicator => {
+            indicator.remove();
+        });
+        
+        // Move the dragged element in real-time
+        if (e.clientY < midpoint) {
+            if (this.previousElementSibling !== draggedElement) {
+                editorContainer.insertBefore(draggedElement, this);
+            }
+        } else {
+            if (this.nextElementSibling !== draggedElement) {
+                editorContainer.insertBefore(draggedElement, this.nextElementSibling);
+            }
+        }
+        
+        // Create and position new indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'drop-indicator';
+        
+        if (e.clientY < midpoint) {
+            this.parentNode.insertBefore(indicator, this);
+        } else {
+            this.parentNode.insertBefore(indicator, this.nextSibling);
+        }
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (!draggedElement || draggedElement === this) return;
+
+        const rect = this.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+
+        applyReorderAnimation(() => {
+            if (e.clientY < midpoint) {
+                editorContainer.insertBefore(draggedElement, this);
+            } else {
+                editorContainer.insertBefore(draggedElement, this.nextSibling);
+            }
+        });
+
+        document.querySelectorAll('.drop-indicator').forEach(indicator => indicator.remove());
+        draggedElement = null;
+    }
+
+    // Also add dragover handler to the container itself
+    editorContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    });
+
+    editorContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        
+        if (!draggedElement) return;
+        
+        // If dropped directly on container, append to the end
+        if (e.target === editorContainer) {
+            editorContainer.appendChild(draggedElement);
+        }
+        
+        // Remove all drop indicators
+        document.querySelectorAll('.drop-indicator').forEach(indicator => {
+            indicator.remove();
+        });
+        
+        draggedElement = null;
+        updatePageContent();
+    });
+
+    function updatePageContent() {
+        const elements = Array.from(editorContainer.children)
+            .filter(el => !el.classList.contains('page-builder-placeholder'))
+            .map(element => {
+                const contentWrapper = element.querySelector('.content-wrapper');
+                let type, content = '';
+                
+                if (contentWrapper.querySelector('.header-preview')) {
+                    type = 'header';
+                    const headerElement = contentWrapper.querySelector('[contenteditable]');
+                    content = headerElement.innerHTML;
+                    const headingType = headerElement.getAttribute('data-heading-type') || 'h2';
+                    return { type, content, heading_type: headingType };
+                } else if (contentWrapper.querySelector('.text-editor')) {
+                    type = 'text';
+                    content = contentWrapper.querySelector('[contenteditable]').innerHTML;
+                    return { type, content };
+                } else if (contentWrapper.querySelector('img')) {
+                    type = 'image';
+                    const img = contentWrapper.querySelector('img');
+                    const caption = contentWrapper.querySelector('.image-caption');
+                    return { 
+                        type, 
+                        content: img.alt || '',
+                        image_url: img.src,
+                        caption: caption ? caption.innerHTML : ''
+                    };
+                }
+                return { type, content };
+            });
+
+        const pageContentInput = document.getElementById('page-content');
+        const jsonString = JSON.stringify(elements);
+        console.log("Saving content:", jsonString);
+        pageContentInput.value = jsonString;
+        
+        // After updating the page content, save to history
+        saveToHistory();
+    }
+
+    // Add event listeners for content changes
+    editorContainer.addEventListener('input', function(e) {
+        if (e.target.hasAttribute('contenteditable')) {
+            updatePageContent();
+        }
+    });
+
+    // Initialize history with current content on load and restore saved state.
+    window.addEventListener('load', function() {
+        const pageContentInput = document.getElementById('page-content');
+        contentHistory = [pageContentInput.value];
+        currentHistoryIndex = 0;
+        updateUndoRedoButtons();
+        restoreState();  // Call restoreState so that saved elements show up in the editor.
+    });
+
+    // Add modal HTML at the end of the editor-main div
+    const imageModal = document.createElement('div');
+    imageModal.className = 'image-modal';
+    imageModal.innerHTML = `
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <img src="" alt="">
+            <div class="modal-caption" contenteditable="true" placeholder="Add a caption..."></div>
+        </div>`;
+    document.querySelector('.editor-main').appendChild(imageModal);
+
+    // Add modal close functionality
+    document.querySelector('.close-modal').addEventListener('click', function() {
+        document.querySelector('.image-modal').style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modal = document.querySelector('.image-modal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    function showConversionOptions(element) {
+        // Create conversion popup
+        const popup = document.createElement('div');
+        popup.className = 'element-options-popup conversion-popup';
+        popup.innerHTML = `
+            <div class="element-option" data-element-type="header">
+                <i class="fas fa-heading"></i>
+            </div>
+            <div class="element-option" data-element-type="text">
+                <i class="fas fa-paragraph"></i>
+            </div>
+            <div class="element-option" data-element-type="image">
+                <i class="fas fa-image"></i>
+            </div>
+        `;
+
+        // Position popup near the convert handle
+        const convertHandle = element.querySelector('.convert-handle');
+        const rect = convertHandle.getBoundingClientRect();
+        popup.style.position = 'fixed';
+        popup.style.top = `${rect.bottom + 5}px`;
+        popup.style.left = `${rect.left}px`;
+        
+        document.body.appendChild(popup);
+
+        // Add click handlers for conversion options
+        popup.querySelectorAll('.element-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const newType = this.getAttribute('data-element-type');
+                convertElement(element, newType);
+                popup.remove();
+            });
+        });
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function closePopup(event) {
+            if (!popup.contains(event.target) && !convertHandle.contains(event.target)) {
+                popup.remove();
+                document.removeEventListener('click', closePopup);
+            }
+        });
+    }
+
+    function convertElement(element, newType) {
+        const oldContent = getElementContent(element);
+        const newElement = createElement(newType);
+        
+        // Transfer content if types are compatible
+        if (canTransferContent(element, newType)) {
+            setElementContent(newElement, oldContent);
+        }
+        
+        element.parentNode.replaceChild(newElement, element);
+        initializeElement(newElement);
+        updatePageContent();
+    }
+
+    function getElementContent(element) {
+        const contentEditable = element.querySelector('[contenteditable="true"]');
+        if (contentEditable) {
+            return contentEditable.innerHTML;
+        }
+        const img = element.querySelector('img');
+        if (img) {
+            return {
+                src: img.src,
+                caption: element.querySelector('.image-caption')?.innerHTML || ''
+            };
+        }
+        return '';
+    }
+
+    function canTransferContent(element, newType) {
+        const currentType = getCurrentElementType(element);
+        return (currentType === 'header' && newType === 'text') ||
+               (currentType === 'text' && newType === 'header');
+    }
+
+    function getCurrentElementType(element) {
+        if (element.querySelector('.header-preview')) return 'header';
+        if (element.querySelector('.text-editor')) return 'text';
+        if (element.querySelector('.image-upload-container') || 
+            element.querySelector('.image-container')) return 'image';
+        return null;
+    }
+
+    function setElementContent(element, content) {
+        const contentEditable = element.querySelector('[contenteditable="true"]');
+        if (contentEditable && typeof content === 'string') {
+            contentEditable.innerHTML = content;
+        }
+    }
+
+    function applyReorderAnimation(callback) {
+        const container = document.getElementById('editor-container');
+        // Get all elements except any placeholder
+        const children = Array.from(container.children).filter(child => 
+            !child.classList.contains('page-builder-placeholder')
+        );
+        const initialPositions = new Map();
+        children.forEach(child => {
+            initialPositions.set(child, child.getBoundingClientRect());
+        });
+
+        // Execute the DOM changes (reordering)
+        callback();
+
+        // In the next frame, compute differences and animate
+        requestAnimationFrame(() => {
+            children.forEach(child => {
+                const initialRect = initialPositions.get(child);
+                const finalRect = child.getBoundingClientRect();
+                const deltaY = initialRect.top - finalRect.top;
+                if (deltaY !== 0) {
+                    child.style.transition = 'transform 0.8s ease';
+                    child.style.transform = `translateY(${deltaY}px)`;
+                    requestAnimationFrame(() => {
+                        child.style.transform = '';
+                    });
+                }
+            });
+            updatePageContent();
+        });
+    }
+});
+</script>
+

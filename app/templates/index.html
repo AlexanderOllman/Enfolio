@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="bg-gradient"></div>
+    <div class="hero-content">
+        <div class="grid grid-2">
+            <!-- Left side: Hero content -->
+            <div>
+                <!-- Profile Image with Blur Effect -->
+                <div class="profile-container">
+                    <img 
+                        class="profile-image"
+                        src="{{ url_for('static', filename='images/headshot.png') }}"
+                        alt="Alex Ollman"
+                    >
+                    <div class="image-blur"></div>
+                    <div class="image-overlay"></div>
+                    <div class="image-vignette"></div>
+                </div>
+                
+                <div class="text-content">
+                    <span class="text-secondary text-lg">Hi, I'm</span>
+                    <h1 class="text-primary text-4xl font-bold">Alex Ollman</h1>
+                    <p class="text-secondary text-lg mt-4">
+                        Full Stack Developer | Problem Solver | Tech Enthusiast
+                    </p>
+                    <div class="button-group mt-8">
+                        <a href="#contact" class="btn btn-primary">
+                            Contact Me
+                        </a>
+                        <a href="#projects" class="btn btn-text">
+                            View Projects <span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right side: Tech stack animation -->
+            <div class="tech-stack">
+                <div class="carousel-container">
+                    <div class="scroll-up">
+                        <!-- Add your tech stack icons here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Projects Section -->
+<section id="projects" class="section">
+    <div class="content-container">
+        <h2 class="section-title">Featured Projects</h2>
+        <div class="grid grid-3">
+            {% for project in projects %}
+            <article class="project-card">
+                {% if project.image_url %}
+                <img src="{{ project.image_url }}" alt="{{ project.title }}" class="project-card-image">
+                {% endif %}
+                <div class="card-body">
+                    <h3 class="card-title">{{ project.title }}</h3>
+                    <p class="card-text">{{ project.description }}</p>
+                    <div class="project-card-tech">
+                        {% for tech in project.technologies.split(',') %}
+                        <span class="project-card-tech-item">{{ tech.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="card-actions">
+                        {% if project.github_url %}
+                        <a href="{{ project.github_url }}" class="btn btn-secondary" target="_blank">
+                            <i class="bi bi-github"></i> View Code
+                        </a>
+                        {% endif %}
+                        {% if project.live_url %}
+                        <a href="{{ project.live_url }}" class="btn btn-primary" target="_blank">
+                            <i class="bi bi-link-45deg"></i> Live Demo
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Experience Section -->
+<section id="experience" class="section bg-light">
+    <div class="content-container">
+        <h2 class="section-title">Experience</h2>
+        <div class="timeline">
+            {% for exp in experiences %}
+            <article class="experience-card">
+                <div class="card-body">
+                    <div class="experience-card-header">
+                        <div>
+                            <h3 class="card-title">{{ exp.position }}</h3>
+                            <h4 class="card-subtitle">{{ exp.company }}</h4>
+                        </div>
+                        <span class="experience-card-date">
+                            {{ exp.start_date.strftime('%b %Y') }} - 
+                            {% if exp.end_date %}
+                                {{ exp.end_date.strftime('%b %Y') }}
+                            {% else %}
+                                Present
+                            {% endif %}
+                        </span>
+                    </div>
+                    <p class="card-text">{{ exp.description }}</p>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Blog Section -->
+<section id="blog" class="section">
+    <div class="content-container">
+        <h2 class="section-title">Latest Posts</h2>
+        <div class="grid grid-3">
+            {% for post in blog_posts %}
+            <article class="blog-card">
+                {% if post.image_url %}
+                <img src="{{ post.image_url }}" alt="{{ post.title }}" class="blog-card-image">
+                {% endif %}
+                <div class="card-body">
+                    <div class="blog-card-meta">
+                        <i class="bi bi-calendar"></i>
+                        <time>{{ post.date_created.strftime('%B %d, %Y') }}</time>
+                    </div>
+                    <h3 class="card-title">{{ post.title }}</h3>
+                    <p class="card-text">{{ post.description }}</p>
+                    <a href="{{ url_for('main.view_blog', id=post.id) }}" class="btn btn-text">
+                        Read More <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %} 
