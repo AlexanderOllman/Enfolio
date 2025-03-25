@@ -1,0 +1,16 @@
+<svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Abstract decoration elements -->
+    <circle cx="250" cy="50" r="30" fill="white" fill-opacity="0.2"/>
+    <circle cx="270" cy="100" r="20" fill="white" fill-opacity="0.15"/>
+    <circle cx="230" cy="120" r="15" fill="white" fill-opacity="0.1"/>
+    
+    <!-- Decorative lines -->
+    <path d="M200 20C230 30 260 60 280 180" stroke="white" stroke-width="2" stroke-opacity="0.1"/>
+    <path d="M180 30C210 50 240 80 270 160" stroke="white" stroke-width="2" stroke-opacity="0.1"/>
+    <path d="M160 40C190 60 220 100 260 140" stroke="white" stroke-width="2" stroke-opacity="0.1"/>
+    
+    <!-- Abstract shapes -->
+    <rect x="210" y="70" width="20" height="20" rx="4" transform="rotate(-15 210 70)" fill="white" fill-opacity="0.1"/>
+    <rect x="240" y="90" width="15" height="15" rx="3" transform="rotate(10 240 90)" fill="white" fill-opacity="0.1"/>
+    <rect x="200" y="110" width="25" height="25" rx="5" transform="rotate(-25 200 110)" fill="white" fill-opacity="0.1"/>
+</svg> 

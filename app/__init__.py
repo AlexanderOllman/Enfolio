@@ -39,7 +39,7 @@ def create_app(config_class=Config):
     
     @app.context_processor
     def inject_csrf_token():
-        return dict(csrf_token=generate_csrf)
+        return dict(csrf_token=generate_csrf())
     
     with app.app_context():
         db.create_all()

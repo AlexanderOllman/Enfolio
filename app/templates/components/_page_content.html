@@ -1,18 +1,32 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components/page-content.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 
 <div class="page-builder">
     <div class="editor-main">
         <div class="editor-toolbar">
-            <button type="button" id="undo-btn" disabled>
-                <i class="fas fa-undo"></i> Undo
-            </button>
-            <button type="button" id="redo-btn" disabled>
-                <i class="fas fa-redo"></i> Redo
-            </button>
-            <button type="button" id="preview-btn">
-                <i class="fas fa-eye"></i> Preview
-            </button>
+            <div class="editor-toolbar-left">
+                <button type="button" id="undo-btn" disabled>
+                    <i class="fas fa-undo"></i> Undo
+                </button>
+                <button type="button" id="redo-btn" disabled>
+                    <i class="fas fa-redo"></i> Redo
+                </button>
+                <button type="button" id="preview-btn">
+                    <i class="fas fa-eye"></i> Preview
+                </button>
+            </div>
+            <div class="editor-toolbar-right">
+                <div class="editor-toggle">
+                    <button type="button" id="visual-editor-btn" class="editor-toggle-btn active">
+                        <i class="fas fa-grip-lines"></i> Visual
+                    </button>
+                    <button type="button" id="markdown-editor-btn" class="editor-toggle-btn">
+                        <i class="fas fa-code"></i> Markdown
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div id="editor-container" class="editor-container">
@@ -20,6 +34,11 @@
                 <p>Click anywhere to start writing</p>
             </div>
         </div>
+        
+        <div id="markdown-container" class="markdown-container" style="display: none;">
+            <textarea id="markdown-editor"></textarea>
+        </div>
+        
         <input type="hidden" name="page_content" id="page-content" 
                value='{{ content.page_content|tojson if content and content.page_content else "[]" }}'
 >
@@ -29,9 +48,212 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const editorContainer = document.getElementById('editor-container');
+    const markdownContainer = document.getElementById('markdown-container');
     const pageContentInput = document.getElementById('page-content');
     let isOptionsVisible = false;
     let draggedElement = null;
+    let currentEditor = 'visual'; // 'visual' or 'markdown'
+    
+    // Initialize EasyMDE
+    let easyMDE = new EasyMDE({
+        element: document.getElementById('markdown-editor'),
+        spellChecker: false,
+        autofocus: false,
+        status: ['lines', 'words'],
+        toolbar: [
+            'bold', 'italic', 'heading', '|', 
+            'quote', 'unordered-list', 'ordered-list', '|',
+            'link', 'image', '|',
+            'preview', 'side-by-side', 'fullscreen', '|',
+            'guide'
+        ],
+        theme: 'easymde'
+    });
+    
+    // Editor toggle functionality
+    const visualEditorBtn = document.getElementById('visual-editor-btn');
+    const markdownEditorBtn = document.getElementById('markdown-editor-btn');
+    
+    visualEditorBtn.addEventListener('click', function() {
+        if (currentEditor !== 'visual') {
+            // Convert markdown to visual editor content
+            convertMarkdownToVisual();
+            // Switch editors
+            editorContainer.style.display = 'block';
+            markdownContainer.style.display = 'none';
+            visualEditorBtn.classList.add('active');
+            markdownEditorBtn.classList.remove('active');
+            currentEditor = 'visual';
+        }
+    });
+    
+    markdownEditorBtn.addEventListener('click', function() {
+        if (currentEditor !== 'markdown') {
+            // Convert visual editor content to markdown
+            convertVisualToMarkdown();
+            // Switch editors
+            editorContainer.style.display = 'none';
+            markdownContainer.style.display = 'block';
+            visualEditorBtn.classList.remove('active');
+            markdownEditorBtn.classList.add('active');
+            currentEditor = 'markdown';
+            // Force a refresh of the EasyMDE instance
+            setTimeout(() => easyMDE.codemirror.refresh(), 10);
+        }
+    });
+    
+    // Function to convert visual editor content to markdown
+    function convertVisualToMarkdown() {
+        try {
+            const content = JSON.parse(pageContentInput.value);
+            let markdownContent = '';
+            
+            if (Array.isArray(content) && content.length > 0) {
+                content.forEach(item => {
+                    if (!item || !item.type) return;
+                    
+                    switch(item.type) {
+                        case 'header':
+                            const headingLevel = item.heading_type ? parseInt(item.heading_type.replace('h', '')) : 2;
+                            const hashMarks = '#'.repeat(headingLevel);
+                            markdownContent += `${hashMarks} ${stripHtml(item.content)}\n\n`;
+                            break;
+                        case 'text':
+                            markdownContent += `${stripHtml(item.content)}\n\n`;
+                            break;
+                        case 'image':
+                            const caption = item.caption ? ` "${stripHtml(item.caption)}"` : '';
+                            markdownContent += `![${stripHtml(item.content || '')}](${item.image_url}${caption})\n\n`;
+                            break;
+                    }
+                });
+            }
+            
+            easyMDE.value(markdownContent.trim());
+        } catch (e) {
+            console.error('Error converting to markdown:', e);
+            easyMDE.value('');
+        }
+    }
+    
+    // Function to convert markdown to visual editor content
+    function convertMarkdownToVisual() {
+        try {
+            const markdown = easyMDE.value();
+            
+            // Clear the editor container first
+            while (editorContainer.firstChild) {
+                editorContainer.removeChild(editorContainer.firstChild);
+            }
+            
+            if (!markdown.trim()) {
+                // Show placeholder if empty
+                editorContainer.innerHTML = `
+                    <div class="text-center text-muted page-builder-placeholder">
+                        <p>Click anywhere to start writing</p>
+                    </div>`;
+                pageContentInput.value = '[]';
+                return;
+            }
+            
+            // Split markdown by double newlines to get blocks
+            const blocks = markdown.split(/\n{2,}/);
+            const elements = [];
+            
+            blocks.forEach(block => {
+                const trimmedBlock = block.trim();
+                if (!trimmedBlock) return;
+                
+                // Check for headers
+                const headerMatch = trimmedBlock.match(/^(#{1,6})\s+(.+)$/);
+                if (headerMatch) {
+                    const level = headerMatch[1].length;
+                    const headingType = `h${level}`;
+                    const content = headerMatch[2];
+                    
+                    elements.push({
+                        type: 'header',
+                        content: content,
+                        heading_type: headingType
+                    });
+                    
+                    const element = createElement('header');
+                    const contentWrapper = element.querySelector('.content-wrapper');
+                    if (contentWrapper) {
+                        const editableDiv = contentWrapper.querySelector('[contenteditable]');
+                        if (editableDiv) {
+                            editableDiv.innerHTML = content;
+                            editableDiv.setAttribute('data-heading-type', headingType);
+                        }
+                    }
+                    editorContainer.appendChild(element);
+                    initializeElement(element);
+                } 
+                // Check for images
+                else if (trimmedBlock.match(/!\[.*?\]\(.*?\)/)) {
+                    const imgMatch = trimmedBlock.match(/!\[(.*?)\]\((.*?)(?:\s+"(.*)")?\)/);
+                    if (imgMatch) {
+                        const alt = imgMatch[1] || '';
+                        const src = imgMatch[2];
+                        const caption = imgMatch[3] || '';
+                        
+                        elements.push({
+                            type: 'image',
+                            content: alt,
+                            image_url: src,
+                            caption: caption
+                        });
+                        
+                        const element = createElement('image');
+                        const contentWrapper = element.querySelector('.content-wrapper');
+                        if (contentWrapper) {
+                            contentWrapper.innerHTML = `
+                                <div class="image-container">
+                                    <img src="${src}" 
+                                         alt="${alt}" 
+                                         style="max-width: 100%; height: auto;"
+                                         class="uploaded-image">
+                                    <div class="image-caption" contenteditable="true" placeholder="Add a caption...">${caption}</div>
+                                </div>`;
+                        }
+                        editorContainer.appendChild(element);
+                        initializeElement(element);
+                    }
+                } 
+                // Default to text
+                else {
+                    elements.push({
+                        type: 'text',
+                        content: trimmedBlock
+                    });
+                    
+                    const element = createElement('text');
+                    const contentWrapper = element.querySelector('.content-wrapper');
+                    if (contentWrapper) {
+                        const editableDiv = contentWrapper.querySelector('[contenteditable]');
+                        if (editableDiv) {
+                            editableDiv.innerHTML = trimmedBlock;
+                        }
+                    }
+                    editorContainer.appendChild(element);
+                    initializeElement(element);
+                }
+            });
+            
+            pageContentInput.value = JSON.stringify(elements);
+            saveToHistory();
+        } catch (e) {
+            console.error('Error converting from markdown:', e);
+        }
+    }
+    
+    // Helper function to strip HTML tags from content
+    function stripHtml(html) {
+        if (!html) return '';
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        return temp.textContent || temp.innerText || '';
+    }
     
     // Add history tracking variables
     let contentHistory = [];

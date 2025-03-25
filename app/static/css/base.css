@@ -9,51 +9,63 @@
 :root {
   /* Colors */
   --color-primary: #004225;
-  --color-primary-hover: #005231;
-  --color-primary-dark: #003319;
-  --color-secondary: #DAA520;
-  --color-secondary-hover: #B8860B;
-  --color-success: #198754;
-  --color-danger: #dc3545;
-  --color-warning: #ffc107;
+  --color-primary-hover: #005d33;
+  --color-primary-dark: #003217;
+  --color-primary-light: #E6F0EB;
+  --color-secondary: var(--color-grey-600);
+  --color-success: var(--color-primary);
+  --color-danger: var(--color-grey-700);
+  --color-warning: var(--color-grey-500);
   --color-info: #0dcaf0;
-  --color-light: #F9F9F9;
+  --color-light: var(--color-grey-200);
   --color-dark: #333333;
-  --color-background: #F9F9F9;
-  --color-text: #333333;
+  --color-background: var(--color-grey-100);
+  --color-text: var(--color-grey-700);
   --color-text-secondary: #666666;
-  --color-heading: #004225;
-  --color-border: #E0E0E0;
-  --color-card-bg: #FFFFFF;
+  --color-heading: var(--color-grey-800);
+  --color-border: var(--color-grey-300);
+  --color-border-light: var(--color-grey-200);
+  --color-card-bg: white;
   
   --color-primary-rgb: 0, 66, 37;
-  --color-secondary-rgb: 218, 165, 32;
+  --color-secondary-rgb: 100, 116, 139;
   
   /* Typography */
   --font-family-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-size-base: 1rem;
+  --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
-  --font-size-lg: 1.25rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
   
   /* Spacing */
   --spacing-1: 0.25rem;
   --spacing-2: 0.5rem;
   --spacing-3: 1rem;
   --spacing-4: 1.5rem;
-  --spacing-5: 3rem;
+  --spacing-5: 2rem;
+  --spacing-6: 3rem;
   
   /* Border radius */
-  --border-radius-sm: 0.25rem;
-  --border-radius: 0.5rem;
-  --border-radius-lg: 1rem;
+  --border-radius-sm: 4px;
+  --border-radius: 8px;
+  --border-radius-lg: 12px;
   
   /* Transitions */
-  --transition-base: all 0.3s ease;
+  --transition-base: all 0.2s ease;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.12);
+  
+  /* Max Width */
+  --max-width: 1200px;
 }
 
 /* Global styles */
@@ -61,16 +73,16 @@ body {
   font-family: var(--font-family-base);
   font-size: var(--font-size-base);
   line-height: 1.5;
-  color: var(--color-dark);
-  background-color: var(--color-light);
+  color: var(--color-text);
+  background-color: var(--color-background);
 }
 
 /* Utility classes */
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 var(--spacing-3);
+  padding: 0 var(--spacing-4);
 }
 
 .text-primary { color: var(--color-primary); }
@@ -258,12 +270,12 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-heading);
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.75rem; }
-h4 { font-size: 1.5rem; }
-h5 { font-size: 1.25rem; }
-h6 { font-size: 1rem; }
+h1 { font-size: var(--font-size-4xl); }
+h2 { font-size: var(--font-size-3xl); }
+h3 { font-size: var(--font-size-2xl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-base); }
 
 p { margin-bottom: 1rem; }
 
@@ -271,7 +283,7 @@ p { margin-bottom: 1rem; }
 a {
   color: var(--color-primary);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: var(--transition-base);
 }
 
 a:hover {
@@ -321,4 +333,37 @@ input, textarea, select {
   html {
     font-size: 18px;
   }
+}
+
+/* Base resets to prevent horizontal overflows */
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Ensure containers don't have horizontal overflow */
+.container,
+.content-container {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* For admin pages */
+.admin-layout {
+  width: 100vw;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  position: relative;
 } 

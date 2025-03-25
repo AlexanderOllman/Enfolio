@@ -1,188 +1,553 @@
 {% extends "admin/base_admin.html" %}
 
 {% block content %}
-    <form method="POST" enctype="multipart/form-data">
-        <div class="form-layout">
-            <div class="form-fields-column">
-                <div class="form-card">
-                    <!-- Dynamic title based on whether editing or creating -->
-                    <h2 class="form-card-title">
-                        {% if content %}
-                            Edit {{ content.type|title }}
-                        {% else %}
-                            Create New Content
-                        {% endif %}
-                    </h2>
+<style>
+    /* Company search validation styling */
+    .validation-message {
+        font-size: 0.9rem;
+        color: #666;
+        padding: 8px;
+        background-color: #f8f9fa;
+        border-radius: 4px 4px 0 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .company-result {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s;
+    }
+    
+    .company-result:last-child {
+        border-bottom: none;
+        border-radius: 0 0 4px 4px;
+    }
+    
+    .company-result:hover {
+        background-color: #f0f7ff;
+    }
+    
+    .company-name {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .company-domain {
+        font-size: 0.8rem;
+        color: #666;
+    }
+    
+    .autocomplete-results {
+        position: absolute;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+    }
+    
+    .no-results, .loading, .error {
+        padding: 12px;
+        text-align: center;
+        color: #666;
+    }
+    
+    .loading {
+        color: #2c7be5;
+    }
+    
+    .error {
+        color: #d9534f;
+    }
+    
+    .org-logo.active {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .org-logo.active:hover {
+        transform: scale(1.03);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+</style>
 
-                    {{ form.csrf_token }}
+<div class="admin-content-container">
+    <form method="POST" enctype="multipart/form-data" class="content-form" {% if content %}data-content-type="{{ content.type }}"{% endif %}>
+        {{ form.csrf_token }}
+        
+        <!-- Form Header -->
+        <div class="form-header">
+            <h2 class="form-title">
+                {% if content %}
+                    Edit {{ content.type|title }}
+                {% else %}
+                    Create New Content
+                {% endif %}
+            </h2>
 
-                    <!-- Content Type Selection (only show when creating new) -->
-                    {% if not content %}
-                    <div class="form-group">
-                        <label for="type" class="form-label">Content Type</label>
-                        <select class="form-control form-select" id="type" name="type" required>
-                            <option value="">Select content type...</option>
-                            <option value="project" {% if request.args.get('type') == 'project' %}selected{% endif %}>Project</option>
-                            <option value="experience" {% if request.args.get('type') == 'experience' %}selected{% endif %}>Experience</option>
-                            <option value="blog" {% if request.args.get('type') == 'blog' %}selected{% endif %}>Blog Post</option>
-                        </select>
+            <!-- Progress Steps -->
+            <div class="form-progress">
+                <div class="progress-step active" data-step="type">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Content Type</div>
+                </div>
+                <div class="progress-step" data-step="details">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Content Details</div>
+                </div>
+                <div class="progress-step" data-step="content">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Page Content</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Sections -->
+        <div class="form-sections">
+            <!-- Step 1: Content Type Selection -->
+            <section class="form-section active" id="type-section">
+                <h3 class="section-title">Select Content Type</h3>
+                <div class="content-type-selector">
+                    <div class="type-option" data-value="project">
+                        <i class="fas fa-code"></i>
+                        <span>Project</span>
                     </div>
-                    {% endif %}
+                    <div class="type-option" data-value="experience">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Experience</span>
+                    </div>
+                    <div class="type-option" data-value="blog">
+                        <i class="fas fa-pen"></i>
+                        <span>Blog Post</span>
+                    </div>
+                    <input type="hidden" id="type" name="type" value="{{ request.args.get('type') or 'project' }}">
+                </div>
+            </section>
 
-                    <!-- Common Fields -->
-                    <div class="form-group">
-                        <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="title" name="title" 
-                               value="{{ content.title if content else '' }}" required>
+            <!-- Step 2: Content Details -->
+            <section class="form-section" id="details-section">
+                <div class="form-sections-grid">
+                    <!-- Basic Details Column -->
+                    <div class="form-column">                        
+                        <!-- Common Fields with dynamic labels (for project and blog) -->
+                        <div class="form-group title-description-fields">
+                            <label for="title" class="form-label" id="title-label">Title</label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   value="{{ content.title if content else '' }}" required>
+                        </div>
+
+                        <div class="form-group title-description-fields">
+                            <label for="description" class="form-label" id="description-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ content.description if content else '' }}</textarea>
+                        </div>
+
+                        <!-- Experience Fields -->
+                        <div class="content-type-fields experience-fields">
+                            <div class="form-group organization-container">
+                                <div class="organization-logo-container" id="organization-logo-container">
+                                    {% if content and content.image_url %}
+                                        <div class="org-logo active">
+                                            <img src="{{ url_for('static', filename='uploads/' + content.image_url) }}" alt="{{ content.company }}">
+                                        </div>
+                                    {% else %}
+                                        <div class="org-logo empty">
+                                            <i class="fas fa-building"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="org-details">
+                                    <label for="company" class="form-label">Organization</label>
+                                    <div class="autocomplete-wrapper">
+                                        <input type="text" class="form-control" id="company" 
+                                            name="company" autocomplete="off"
+                                           value="{{ content.company if content else '' }}" {% if request.args.get('type') == 'experience' %}required{% endif %}>
+                                        <div class="autocomplete-results" id="company-results"></div>
+                                    </div>
+                                    <input type="hidden" name="company_domain" id="company_domain" value="">
+                                    <input type="hidden" name="title" id="hidden_title" value="">
+                                    <input type="hidden" name="company_logo_url" id="company_logo_url" value="">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="position" class="form-label">Position</label>
+                                <input type="text" class="form-control" id="position" 
+                                       name="position" 
+                                       value="{{ content.position if content else '' }}" {% if request.args.get('type') == 'experience' %}required{% endif %}>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" 
-                                rows="3" required>{{ content.description if content else '' }}</textarea>
-                    </div>
+                    <!-- Specific Info Column -->
+                    <div class="form-column">
+                        <!-- Project Fields -->
+                        <div class="content-type-fields project-fields">
+                            <div class="form-group">
+                                <label for="project_url" class="form-label">Project URL</label>
+                                <input type="url" class="form-control" id="project_url" 
+                                       name="project_url" 
+                                       value="{{ content.project_url if content else '' }}">
+                            </div>
 
-                    <div class="form-group">
-                        <label for="image" class="form-label">Image</label>
-                        {% if content and content.image_url %}
-                        <div class="form-image-preview">
-                            <img src="{{ content.image_url }}" alt="Current image" 
-                                 style="max-width: 200px; height: auto;">
-                        </div>
-                        {% endif %}
-                        <div class="form-file">
-                            <input type="file" class="form-file-input" id="image" name="image">
-                            <label class="form-file-label" for="image">
-                                <i class="fas fa-upload"></i>
-                                <span>Choose a file...</span>
-                            </label>
-                        </div>
-                    </div>
+                            <div class="form-group">
+                                <label for="github_url" class="form-label">GitHub URL</label>
+                                <input type="url" class="form-control" id="github_url" 
+                                       name="github_url" 
+                                       value="{{ content.github_url if content else '' }}">
+                            </div>
 
-                    <!-- Type-specific fields -->
-                    <div class="project-fields" style="display: none;">
-                        <div class="form-group">
-                            <label for="technologies" class="form-label">Technologies Used</label>
-                            <input type="text" class="form-control" id="technologies" 
-                                   name="technologies" 
-                                   value="{{ content.technologies if content else '' }}"
-                                   placeholder="e.g., Python, React, Docker">
+                            <div class="form-group">
+                                <label for="tech_stack" class="form-label">Tech Stack</label>
+                                <input type="text" class="form-control" id="tech_stack" 
+                                       name="tech_stack" placeholder="e.g., Python, React, PostgreSQL" 
+                                       value="{{ content.tech_stack if content else '' }}">
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="github_url" class="form-label">GitHub URL</label>
-                            <input type="url" class="form-control" id="github_url" 
-                                   name="github_url" 
-                                   value="{{ content.github_url if content else '' }}">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="live_url" class="form-label">Live URL</label>
-                            <input type="url" class="form-control" id="live_url" 
-                                   name="live_url" 
-                                   value="{{ content.live_url if content else '' }}">
-                        </div>
-                    </div>
-
-                    <div class="experience-fields" style="display: none;">
-                        <div class="form-group">
-                            <label for="company" class="form-label">Company</label>
-                            <input type="text" class="form-control" id="company" 
-                                   name="company" 
-                                   value="{{ content.company if content else '' }}">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="position" class="form-label">Position</label>
-                            <input type="text" class="form-control" id="position" 
-                                   name="position" 
-                                   value="{{ content.position if content else '' }}">
-                        </div>
-
-                        <div class="form-grid">
+                        <!-- Experience Fields -->
+                        <div class="content-type-fields experience-fields">
                             <div class="form-group">
                                 <label for="start_date" class="form-label">Start Date</label>
                                 <input type="date" class="form-control" id="start_date" 
                                        name="start_date" 
-                                       value="{{ content.start_date.strftime('%Y-%m-%d') if content and content.start_date else '' }}">
+                                       value="{{ content.start_date if content else '' }}" {% if request.args.get('type') == 'experience' %}required{% endif %}>
                             </div>
+
                             <div class="form-group">
                                 <label for="end_date" class="form-label">End Date</label>
                                 <input type="date" class="form-control" id="end_date" 
                                        name="end_date" 
-                                       value="{{ content.end_date.strftime('%Y-%m-%d') if content and content.end_date else '' }}">
+                                       value="{{ content.end_date if content else '' }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="skills" class="form-label">Skills</label>
+                                <input type="text" class="form-control" id="skills" 
+                                       name="skills" placeholder="e.g., Leadership, Project Management, Agile" 
+                                       value="{{ content.skills if content else '' }}">
+                                <small class="text-muted">Comma-separated list of skills</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="responsibilities" class="form-label">Key Responsibilities</label>
+                                <textarea class="form-control" id="responsibilities" name="responsibilities" 
+                                    rows="4" placeholder="Describe your core job responsibilities">{{ content.responsibilities if content else '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Blog Fields -->
+                        <div class="content-type-fields blog-fields">
+                            <div class="form-group">
+                                <label for="blog_content" class="form-label">Summary</label>
+                                <textarea class="form-control" id="blog_content" 
+                                            name="content" 
+                                        rows="5">{{ content.content if content else '' }}</textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tags" class="form-label">Tags</label>
+                                <input type="text" class="form-control" id="tags" 
+                                       name="tags" placeholder="e.g., Python, Web Development, Tutorial" 
+                                       value="{{ content.tags if content else '' }}">
                             </div>
                         </div>
                     </div>
-
-                    <div class="blog-fields" style="display: none;">
-                        <div class="form-group">
-                            <label for="content" class="form-label">Content</label>
-                            <textarea class="form-control" id="content" 
-                                    name="content" 
-                                    rows="10">{{ content.content if content else '' }}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        {% if content %}
-                            <a href="{{ url_for('main.admin_' + (content.type + 's' if content.type == 'project' else content.type)) }}" 
-                               class="btn btn-outline-secondary">Cancel</a>
-                        {% else %}
-                            <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancel</a>
-                        {% endif %}
-                        <button type="submit" class="btn btn-primary">
-                            {{ 'Save Changes' if content else 'Create Content' }}
-                        </button>
-                    </div>
                 </div>
-            </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline-secondary prev-step" data-prev="type">Back to Content Type</button>
+                    <button type="button" class="btn btn-primary next-step" data-next="content">Continue to Page Content</button>
+                </div>
+            </section>
 
-            <!-- Right Column -->
-            <div class="form-builder-column">
-                <div class="form-card">
-                    <h2 class="form-card-title">Page Content</h2>
+            <!-- Step 3: Page Content -->
+            <section class="form-section" id="content-section">
+                <div class="page-builder-container">
+                    <h3 class="section-title">Page Content</h3>
+                    <p class="section-description">Build your page by adding and arranging content elements.</p>
+                    
                     {% include 'components/_page_content.html' with context %}
                 </div>
-            </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline-secondary prev-step" data-prev="details">Back to Details</button>
+                    <button type="submit" class="btn btn-primary submit-btn">
+                        {{ 'Save Changes' if content else 'Create Content' }}
+                    </button>
+                </div>
+            </section>
         </div>
     </form>
+</div>
 
 <script>
-function updateFieldVisibility(contentType) {
-    // Hide all specific fields
-    document.querySelector('.project-fields').style.display = 'none';
-    document.querySelector('.experience-fields').style.display = 'none';
-    document.querySelector('.blog-fields').style.display = 'none';
-
-    // Show fields based on selected/current type
-    if (contentType === 'project') {
-        document.querySelector('.project-fields').style.display = 'block';
-    } else if (contentType === 'experience') {
-        document.querySelector('.experience-fields').style.display = 'block';
-    } else if (contentType === 'blog') {
-        document.querySelector('.blog-fields').style.display = 'block';
+document.addEventListener('DOMContentLoaded', function() {
+    const typeOptions = document.querySelectorAll('.type-option');
+    const typeInput = document.getElementById('type');
+    const form = document.querySelector('form');
+    const progressSteps = document.querySelectorAll('.progress-step');
+    const formSections = document.querySelectorAll('.form-section');
+    const initialType = typeInput.value;
+    
+    // Dynamic field label mappings - moved to the top of the script
+    const fieldLabels = {
+        'project': {
+            'title': 'Project Title',
+            'description': 'Project Description',
+            'image': 'Project Screenshot'
+        },
+        'experience': {
+            'title': 'Organization',
+            'description': 'Role Overview',
+            'image': 'Organization Logo'
+        },
+        'blog': {
+            'title': 'Blog Title',
+            'description': 'Blog Introduction',
+            'image': 'Featured Image'
+        }
+    };
+    
+    // Function to update field labels based on content type
+    function updateFieldLabels(type) {
+        const labels = fieldLabels[type];
+        if (labels) {
+            const titleLabel = document.getElementById('title-label');
+            const descriptionLabel = document.getElementById('description-label');
+            
+            if (titleLabel) titleLabel.textContent = labels.title;
+            if (descriptionLabel) descriptionLabel.textContent = labels.description;
+            
+            // Check if image-label exists before updating
+            const imageLabel = document.getElementById('image-label');
+            if (imageLabel) {
+                imageLabel.textContent = labels.image;
+            }
+        }
     }
-}
-
-// For create form: Handle type selection changes
-const typeSelect = document.getElementById('type');
-if (typeSelect) {
-    typeSelect.addEventListener('change', function() {
-        updateFieldVisibility(this.value);
+    
+    // Function to navigate to a specific step
+    function navigateToStep(step) {
+        // Hide all sections
+        formSections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Show the target section
+        document.getElementById(`${step}-section`).classList.add('active');
+        
+        // Update progress indicators
+        progressSteps.forEach(progressStep => {
+            if (progressStep.getAttribute('data-step') === step) {
+                progressStep.classList.add('active');
+            } else {
+                progressStep.classList.remove('active');
+                
+                // Add completed class to previous steps
+                if ((step === 'details' && progressStep.getAttribute('data-step') === 'type') ||
+                    (step === 'content' && (progressStep.getAttribute('data-step') === 'type' || 
+                                           progressStep.getAttribute('data-step') === 'details'))) {
+                    progressStep.classList.add('completed');
+                } else {
+                    progressStep.classList.remove('completed');
+                }
+            }
+        });
+    }
+    
+    // Function to update type-specific fields
+    function updateTypeSpecificFields(type) {
+        // Hide all type-specific fields
+        document.querySelectorAll('.content-type-fields').forEach(field => {
+            field.style.display = 'none';
+        });
+        
+        // Show fields based on selected type
+        if (type === 'project') {
+            document.querySelectorAll('.project-fields').forEach(field => {
+                field.style.display = 'block';
+            });
+        } else if (type === 'experience') {
+            document.querySelectorAll('.experience-fields').forEach(field => {
+                field.style.display = 'block';
+            });
+        } else if (type === 'blog') {
+            document.querySelectorAll('.blog-fields').forEach(field => {
+                field.style.display = 'block';
+            });
+        }
+    }
+    
+    // Handle content type selection - navigate to details page on selection
+    typeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Update visuals
+            document.querySelectorAll('.type-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            
+            // Update hidden input
+            const selectedType = this.getAttribute('data-value');
+            typeInput.value = selectedType;
+            
+            // Update field visibility
+            updateTypeSpecificFields(selectedType);
+            
+            // Update field labels
+            updateFieldLabels(selectedType);
+            
+            // Automatically proceed to details page after selection
+            setTimeout(() => {
+                navigateToStep('details');
+            }, 300);
+        });
     });
     
-    // Trigger on page load if type is pre-selected
-    window.addEventListener('load', function() {
-        updateFieldVisibility(typeSelect.value);
+    // Handle back/next button navigation
+    document.querySelectorAll('.next-step, .prev-step').forEach(button => {
+        button.addEventListener('click', function() {
+            const direction = this.classList.contains('next-step') ? 'next' : 'prev';
+            const targetStep = this.getAttribute(`data-${direction}`);
+            navigateToStep(targetStep);
+        });
     });
-}
 
-// For edit form: Show correct fields on load
-{% if content %}
-    window.addEventListener('load', function() {
-        updateFieldVisibility('{{ content.type }}');
-    });
-{% endif %}
+    // Initialize form state
+    updateTypeSpecificFields(initialType);
+    updateFieldLabels(initialType);
+    
+    // Toggle image generation features based on content type
+    function toggleImageGenerationFeatures(type) {
+        const generateBtn = document.getElementById('generate-image-btn');
+        const imageField = document.querySelector('.image-field');
+        
+        if (generateBtn && imageField) {
+            if (type === 'experience') {
+                // For experience, we'll handle company logos differently
+                imageField.classList.add('hidden');
+                generateBtn.style.display = 'none';
+            } else {
+                // For projects and blogs, show the generation button
+                imageField.classList.remove('hidden');
+                generateBtn.style.display = 'inline-flex';
+            }
+        }
+    }
+    
+    // Initialization for edit mode
+    if (form.hasAttribute('data-content-type')) {
+        // If we're in edit mode, skip the content type selection
+        navigateToStep('details');
+    }
+    
+    // Safely initialize functions that might depend on elements that could be missing
+    try {
+        // Initialize image preview functionality
+        if (document.getElementById('image') && document.getElementById('image-preview-container')) {
+            initImagePreview();
+        }
+        
+        // Initialize image generation
+        if (document.getElementById('generate-image-btn')) {
+            initImageGeneration();
+        }
+        
+        // Initialize company search
+        if (document.getElementById('company')) {
+            initCompanySearch();
+        }
+        
+        // Initialize: add logic to synchronize company and title
+        const companyInput = document.getElementById('company');
+        const hiddenTitleInput = document.getElementById('hidden_title');
+        
+        if (companyInput && hiddenTitleInput) {
+            companyInput.addEventListener('input', function() {
+                hiddenTitleInput.value = this.value;
+            });
+            // Initialize on page load
+            if (companyInput.value) {
+                hiddenTitleInput.value = companyInput.value;
+            }
+        }
+    } catch (error) {
+        console.error('Error initializing form functions:', error);
+    }
+    
+    // Initialize image preview functionality
+    function initImagePreview() {
+        const imageInput = document.getElementById('image');
+        const previewContainer = document.getElementById('image-preview-container');
+        
+        // Preview uploaded image
+        imageInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewContainer.innerHTML = `
+                        <div class="image-preview active">
+                            <img src="${e.target.result}" alt="Image Preview">
+                            <div class="image-actions">
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-image" title="Remove Image">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add event listener to remove button
+                    const removeBtn = previewContainer.querySelector('.remove-image');
+                    if (removeBtn) {
+                        removeBtn.addEventListener('click', function() {
+                            imageInput.value = '';
+                            previewContainer.innerHTML = `
+                                <div class="image-preview">
+                                    <div class="empty-state">
+                                        <i class="fas fa-image"></i>
+                                        <span>No image selected</span>
+                                    </div>
+                                </div>
+                            `;
+                            const generatedImageInput = document.getElementById('generated_image');
+                            if (generatedImageInput) {
+                                generatedImageInput.value = '';
+                            }
+                        });
+                    }
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Make the preview clickable to trigger file upload
+        previewContainer.addEventListener('click', function(e) {
+            // Don't trigger if clicking on the remove button
+            if (!e.target.closest('.remove-image')) {
+                imageInput.click();
+            }
+        });
+    }
+    
+    // Image generation functionality
+    function initImageGeneration() {
+        // Implementation goes here
+    }
+    
+    // Company search and logo functionality
+    function initCompanySearch() {
+        // Implementation goes here
+    }
+});
 </script>
 {% endblock %} 

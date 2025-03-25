@@ -20,7 +20,7 @@ def init_db():
         
         # Create a test user
         user = User(username='admin')
-        user.set_password('password123')
+        user.set_password('password123')  # Using pbkdf2:sha256 instead of scrypt for better compatibility
         db.session.add(user)
         db.session.commit()
         

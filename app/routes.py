@@ -1,5 +1,5 @@
-from flask import render_template, Blueprint, request, redirect, url_for, flash, abort, jsonify
-from flask_login import login_required
+from flask import render_template, Blueprint, request, redirect, url_for, flash, abort, jsonify, session
+from flask_login import login_required, current_user
 from app.models import Content, Journal
 from app import db
 from datetime import datetime
@@ -9,6 +9,8 @@ from werkzeug.utils import secure_filename
 import time
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
+from app.utils.image_utils import ImageGenerator
+from app.utils.company_utils import CompanySearch
 
 main = Blueprint('main', __name__)
 
@@ -235,6 +237,15 @@ def create_new():
             content.position = request.form.get('position')
             content.start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date() if request.form.get('start_date') else None
             content.end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date() if request.form.get('end_date') else None
+            
+            # Add new experience fields
+            content.employment_type = request.form.get('employment_type')
+            content.location = request.form.get('location')
+            content.is_remote = True if request.form.get('is_remote') else False
+            content.team_size = request.form.get('team_size')
+            content.key_achievements = request.form.get('key_achievements')
+            content.skills = request.form.get('skills')
+            content.responsibilities = request.form.get('responsibilities')
         elif content_type == 'blog':
             content.content = request.form.get('content')
 
@@ -280,6 +291,15 @@ def edit_content(id):
                 content.position = request.form.get('position')
                 content.start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date() if request.form.get('start_date') else None
                 content.end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date() if request.form.get('end_date') else None
+                
+                # Add new experience fields
+                content.employment_type = request.form.get('employment_type')
+                content.location = request.form.get('location')
+                content.is_remote = True if request.form.get('is_remote') else False
+                content.team_size = request.form.get('team_size')
+                content.key_achievements = request.form.get('key_achievements')
+                content.skills = request.form.get('skills')
+                content.responsibilities = request.form.get('responsibilities')
             elif content.type == 'blog':
                 content.content = request.form.get('content')
 
@@ -354,10 +374,19 @@ def create_content():
     # Handle image upload if provided
     if 'image' in request.files:
         file = request.files['image']
-        if file and allowed_file(file.filename):
+        if file and file.filename and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(UPLOAD_FOLDER, filename))
             content.image_url = filename
+    # For company logos from URL (when company search is used)
+    elif content_type == 'experience' and request.form.get('company_logo_url'):
+        logo_url = request.form.get('company_logo_url')
+        if logo_url.startswith('http'):
+            # It's an external URL - we'll store it directly
+            content.image_url = logo_url
+        else:
+            # It's a filename from our own uploads folder
+            content.image_url = logo_url
 
     # Add type-specific fields
     if content_type == 'project':
@@ -369,6 +398,15 @@ def create_content():
         content.position = request.form.get('position')
         content.start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date() if request.form.get('start_date') else None
         content.end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date() if request.form.get('end_date') else None
+        
+        # Add new experience fields
+        content.employment_type = request.form.get('employment_type')
+        content.location = request.form.get('location')
+        content.is_remote = True if request.form.get('is_remote') else False
+        content.team_size = request.form.get('team_size')
+        content.key_achievements = request.form.get('key_achievements')
+        content.skills = request.form.get('skills')
+        content.responsibilities = request.form.get('responsibilities')
     elif content_type == 'blog':
         content.content = request.form.get('content')
 
@@ -426,3 +464,143 @@ def delete_journal(id):
         db.session.rollback()
         flash('An error occurred while deleting the journal entry: ' + str(e), 'error')
     return redirect(url_for('main.admin_journal'))
+
+@main.route('/generate-image', methods=['POST'])
+@login_required
+def generate_image():
+    """
+    Generate an image using OpenAI's DALL-E model based on title and description 
+    for projects and blog posts
+    """
+    try:
+        # Check if we have JSON data
+        if not request.is_json:
+            print("Request is not JSON. Content-Type:", request.headers.get('Content-Type'))
+            return jsonify({
+                'success': False,
+                'error': 'Invalid content type. Expected application/json'
+            }), 400
+            
+        # Check required fields in request
+        data = request.json
+        if not data or 'title' not in data or 'description' not in data or 'type' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'Title, description, and type are required'
+            }), 400
+        
+        title = data.get('title', '').strip()
+        description = data.get('description', '').strip()
+        content_type = data.get('type', 'project').lower()
+        
+        # Validate inputs
+        if not title or not description:
+            return jsonify({
+                'success': False,
+                'error': 'Title and description cannot be empty'
+            }), 400
+        
+        if content_type not in ['project', 'blog']:
+            return jsonify({
+                'success': False,
+                'error': 'Type must be either "project" or "blog"'
+            }), 400
+        
+        try:
+            # Initialize the image generator
+            generator = ImageGenerator()
+            
+            # Generate the image
+            filename = generator.generate_content_image(
+                title, 
+                description, 
+                type_content=content_type,
+                upload_folder=UPLOAD_FOLDER
+            )
+            
+            # Get the URL for the image
+            image_url = url_for('static', filename=f'uploads/{filename}')
+            
+            return jsonify({
+                'success': True,
+                'filename': filename,
+                'url': image_url
+            })
+        
+        except Exception as e:
+            # Log the error
+            print(f"Image generation error: {str(e)}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    except Exception as e:
+        print(f"Unexpected error in generate_image route: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f"An unexpected error occurred: {str(e)}"
+        }), 500
+
+@main.route('/search-companies', methods=['GET'])
+@login_required
+def search_companies():
+    """Search for companies based on query string"""
+    query = request.args.get('q', '')
+    if not query or len(query.strip()) < 2:
+        return jsonify([])
+    
+    try:
+        company_search = CompanySearch()
+        results = company_search.search_companies(query)
+        return jsonify(results)
+    except Exception as e:
+        print(f"Company search error: {str(e)}")
+        return jsonify([])
+
+@main.route('/get-company-logo', methods=['GET'])
+@login_required
+def get_company_logo():
+    """Get logo for a company based on domain"""
+    domain = request.args.get('domain', '')
+    company_name = request.args.get('name', '')
+    
+    if not domain or not company_name:
+        return jsonify({
+            'success': False,
+            'error': 'Domain and company name are required'
+        }), 400
+    
+    try:
+        company_search = CompanySearch()
+        logo_filename = company_search.get_company_logo(domain, company_name)
+        
+        if not logo_filename:
+            return jsonify({
+                'success': False,
+                'error': 'Could not retrieve logo'
+            }), 404
+        
+        # Check if the result is a URL or a local filename
+        if logo_filename.startswith('http'):
+            # For external fallback URLs
+            return jsonify({
+                'success': True,
+                'is_external': True,
+                'url': logo_filename
+            })
+        else:
+            # For locally saved logos
+            logo_url = url_for('static', filename=f'uploads/logos/{logo_filename}')
+            return jsonify({
+                'success': True,
+                'is_external': False,
+                'filename': logo_filename,
+                'url': logo_url
+            })
+    
+    except Exception as e:
+        print(f"Logo retrieval error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

@@ -8,6 +8,185 @@
   color: var(--color-text);
 }
 
+/* Editor Layout and Navigation */
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background-color: var(--color-grey-100);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid var(--color-grey-300);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.editor-toolbar:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  transform: translateY(-2px);
+}
+
+.editor-toolbar-left {
+  display: flex;
+  gap: 8px;
+}
+
+.editor-toolbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.editor-toolbar button {
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--color-grey-700);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-toolbar button:hover {
+  background: var(--color-grey-200);
+  color: var(--color-grey-800);
+  transform: translateY(-1px);
+}
+
+.editor-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.editor-toolbar button i {
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  transition: transform 0.2s ease;
+}
+
+.editor-toolbar button:hover i {
+  transform: translateY(-2px);
+}
+
+/* Editor Toggle */
+.editor-toggle {
+  display: flex;
+  background: var(--color-grey-200);
+  border-radius: 8px;
+  padding: 3px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+
+.editor-toggle-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-grey-600);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-toggle-btn i {
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+}
+
+.editor-toggle-btn:hover i {
+  transform: translateY(-1px);
+}
+
+.editor-toggle-btn.active {
+  background: white;
+  color: var(--color-grey-800);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.editor-toggle-btn.active i {
+  color: var(--color-primary);
+}
+
+/* Markdown Editor Container */
+.markdown-container {
+  border-radius: 12px;
+  border: 1px solid var(--color-grey-300);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  overflow: hidden;
+  background: white;
+}
+
+.markdown-container:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* EasyMDE Customization */
+.EasyMDEContainer {
+  border: none;
+}
+
+.EasyMDEContainer .CodeMirror {
+  border: none;
+  border-radius: 0;
+  padding: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-grey-800);
+}
+
+.EasyMDEContainer .editor-toolbar {
+  border: none;
+  border-bottom: 1px solid var(--color-grey-300);
+  border-radius: 0;
+  opacity: 1;
+  background: var(--color-grey-100);
+}
+
+.EasyMDEContainer .editor-toolbar button {
+  color: var(--color-grey-700);
+}
+
+.EasyMDEContainer .editor-toolbar button:hover, 
+.EasyMDEContainer .editor-toolbar button.active {
+  background: var(--color-grey-200);
+  border-color: var(--color-grey-300);
+}
+
+.EasyMDEContainer .editor-toolbar i.separator {
+  border-left: 1px solid var(--color-grey-300);
+}
+
+.EasyMDEContainer .editor-statusbar {
+  color: var(--color-grey-500);
+  border-top: 1px solid var(--color-grey-300);
+  background: var(--color-grey-100);
+  padding: 8px 16px;
+}
+
+/* Visual Editor Container */
+.editor-container {
+  min-height: 300px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--color-grey-300);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.editor-container:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
 /* Base Content Styles */
 .page-content > * {
   margin-bottom: var(--spacing-4);
@@ -975,58 +1154,6 @@
     background: white;
 }
 
-/* Toolbar */
-.editor-toolbar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-.editor-toolbar button {
-    padding: 0.5rem 1rem;
-    border: none;
-    background: transparent;
-    border-radius: 4px;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.editor-toolbar button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.editor-toolbar button:not(:disabled):hover {
-    background: #f5f5f5;
-    color: #333;
-}
-
-.editor-toolbar button i {
-    margin-right: 0.5rem;
-}
-
-/* Editor Container */
-.editor-container {
-    flex: 1;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 2rem;
-    min-height: 600px;
-    position: relative;
-    overflow-y: auto;
-    cursor: text;
-}
-
 /* Placeholder */
 .page-builder-placeholder {
     position: absolute;
@@ -1081,8 +1208,6 @@
         transform: translateY(0);
     }
 }
-
-/* The content-element and drag-handle styles here are redundant and should be removed */
 
 /* Drop Indicator */
 .drop-indicator {

@@ -20,6 +20,13 @@ class Content(db.Model):
     position = db.Column(db.String(200))
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
+    employment_type = db.Column(db.String(50))
+    location = db.Column(db.String(200))
+    is_remote = db.Column(db.Boolean, default=False)
+    team_size = db.Column(db.Integer)
+    key_achievements = db.Column(db.Text)
+    skills = db.Column(db.String(500))
+    responsibilities = db.Column(db.Text)
     
     # For Project type
     github_url = db.Column(db.String(500))
@@ -69,7 +76,7 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(120), nullable=False)
     
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
 
 class Journal(db.Model):
     id = db.Column(db.Integer, primary_key=True)

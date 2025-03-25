@@ -24,13 +24,62 @@
                                     {% endif %}
                                 {% endif %}
                             </p>
+                            {% if experience.employment_type %}
+                            <span class="badge bg-secondary">{{ experience.employment_type }}</span>
+                            {% endif %}
+                            {% if experience.is_remote %}
+                            <span class="badge bg-info">Remote</span>
+                            {% endif %}
                         </div>
                     </div>
                     <h1 class="card-title">{{ experience.position }}</h1>
                     <h3 class="text-muted">{{ experience.company }}</h3>
+                    {% if experience.location %}
+                    <p class="location">
+                        <i class="bi bi-geo-alt"></i> {{ experience.location }}
+                    </p>
+                    {% endif %}
+                    
                     <div class="mt-4">
                         {{ experience.description }}
                     </div>
+                    
+                    {% if experience.responsibilities %}
+                    <div class="mt-4">
+                        <h4>Key Responsibilities</h4>
+                        <p>{{ experience.responsibilities }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if experience.key_achievements %}
+                    <div class="mt-4">
+                        <h4>Key Achievements</h4>
+                        <ul class="achievements-list">
+                            {% for achievement in experience.key_achievements.split('\n') %}
+                                {% if achievement.strip() %}
+                                <li>{{ achievement.strip() }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    {% if experience.skills %}
+                    <div class="mt-4">
+                        <h4>Skills Used</h4>
+                        <div class="skills-container">
+                            {% for skill in experience.skills.split(',') %}
+                                <span class="badge bg-primary skill-badge">{{ skill.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if experience.team_size %}
+                    <div class="mt-4">
+                        <p><strong>Team Size:</strong> {{ experience.team_size }} members</p>
+                    </div>
+                    {% endif %}
 
                     <!-- Add page builder content -->
                     {% include 'components/_page_content.html' with content=experience %}

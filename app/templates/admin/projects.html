@@ -195,7 +195,7 @@ function deleteProject(id) {
         fetch(`/content/${id}/delete`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': '{{ csrf_token() }}'
+                'X-CSRFToken': '{{ csrf_token }}'
             }
         }).then(response => {
             if (response.ok) {
