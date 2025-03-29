@@ -41,17 +41,27 @@
     }
 
     .header-icon {
-        width: 24px;
-        height: 24px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #004225;
+        background-color: white;
+        border-radius: 50%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: all 0.3s ease;
     }
 
     .header-icon:hover {
-        transform: scale(1.2);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        background-color: #004225;
+        color: white;
     }
 
-    /* Stats cards */
+    /* Stats cards container */
     .stats-container {
         display: flex;
         gap: 20px;
@@ -59,52 +69,10 @@
         flex-wrap: wrap;
     }
 
-    .stat-card {
-        background-color: #dbe1e7;
-        border-radius: 15px;
-        padding: 20px;
-        flex: 1;
-        min-width: 220px;
-        transition: transform 0.2s;
-        position: relative;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-    }
-
-    .card-icon {
-        width: 24px;
-        height: 24px;
-    }
-
-    .more-options {
-        width: 24px;
-        height: 24px;
-        cursor: pointer;
-    }
-
-    .stat-value {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-
-    .stat-label {
-        font-size: 14px;
-        color: #555;
-    }
-
     /* Dashboard sections layout */
     .dashboard-layout {
         display: flex;
-        gap: 20px;
+        gap: 30px;
         flex-wrap: wrap;
     }
 
@@ -118,197 +86,32 @@
         min-width: 280px;
     }
 
-    /* Recent activity */
-    .activity-container {
-        background-color: #dbe1e7;
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 30px;
+    /* Fix for calendar grid */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(53, 1fr);
+        grid-template-rows: repeat(7, 1fr);
+        gap: 3px;
+        margin-bottom: 4px;
     }
 
-    .activity-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 15px;
-        color: #333;
+    /* Make legend colors match the calendar grid */
+    .legend-color.level-1 {
+        background-color: #c6e48b;
     }
-
-    .activity-item {
-        display: flex;
-        align-items: center;
-        padding: 15px 0;
-        border-bottom: 1px solid #e0e0e0;
-        transition: background-color 0.2s;
+    
+    .legend-color.level-2 {
+        background-color: #7bc96f;
     }
-
-    .activity-item:hover {
-        background-color: #e8edf1;
+    
+    .legend-color.level-3 {
+        background-color: #239a3b;
     }
-
-    .activity-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: #333;
-        margin-right: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
+    
+    .legend-color.level-4 {
+        background-color: #004225;
     }
-
-    .activity-content {
-        flex: 1;
-    }
-
-    .activity-title-text {
-        font-weight: 500;
-        margin-bottom: 5px;
-    }
-
-    .activity-subtitle {
-        color: #555;
-        font-size: 14px;
-    }
-
-    .activity-time {
-        color: #777;
-        font-size: 14px;
-    }
-
-    .activity-status {
-        margin-left: 15px;
-        font-size: 13px;
-    }
-
-    .published {
-        color: green;
-    }
-
-    .draft {
-        color: orange;
-    }
-
-    /* Analytics chart */
-    .analytics-container {
-        background-color: #dbe1e7;
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 30px;
-    }
-
-    .chart-container {
-        height: 200px;
-        position: relative;
-        margin-top: 20px;
-    }
-
-    /* Quick actions */
-    .todo-container {
-        margin-bottom: 30px;
-    }
-
-    .todo-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 15px;
-    }
-
-    .todo-item {
-        display: flex;
-        align-items: center;
-        padding: 12px 0;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .todo-item:hover {
-        transform: translateX(5px);
-    }
-
-    .todo-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-        color: white;
-    }
-
-    .todo-content {
-        flex: 1;
-    }
-
-    .todo-task {
-        font-weight: 500;
-        margin-bottom: 3px;
-    }
-
-    .todo-description {
-        font-size: 13px;
-        color: #777;
-    }
-
-    /* Journal entries */
-    .journal-container {
-        background-color: #000;
-        color: white;
-        border-radius: 15px;
-        padding: 20px;
-    }
-
-    .journal-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 15px;
-    }
-
-    .journal-item {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 12px 0;
-    }
-
-    .journal-content {
-        margin-top: 5px;
-        font-size: 14px;
-        opacity: 0.8;
-    }
-
-    .view-all-btn {
-        background-color: white;
-        color: black;
-        border: none;
-        border-radius: 8px;
-        padding: 12px;
-        width: 100%;
-        text-align: center;
-        font-weight: 500;
-        margin-top: 15px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        text-decoration: none;
-        display: block;
-    }
-
-    .view-all-btn:hover {
-        background-color: #f0f0f0;
-    }
-
-    /* Empty states */
-    .empty-state {
-        text-align: center;
-        padding: 30px;
-        color: #777;
-    }
-
-    .empty-state i {
-        font-size: 40px;
-        margin-bottom: 15px;
-    }
-
+    
     /* Responsive adjustments */
     @media (max-width: 992px) {
         .dashboard-layout {
@@ -346,7 +149,9 @@
             <div class="card-icon">
                 <i class="bi bi-code-square"></i>
             </div>
-            <div class="more-options">⋮</div>
+            <div class="more-options">
+                <i class="bi bi-three-dots-vertical"></i>
+            </div>
         </div>
         <div class="stat-value">{{ content|selectattr('type', 'equalto', 'project')|list|length }}</div>
         <div class="stat-label">Projects</div>
@@ -356,7 +161,9 @@
             <div class="card-icon">
                 <i class="bi bi-briefcase"></i>
             </div>
-            <div class="more-options">⋮</div>
+            <div class="more-options">
+                <i class="bi bi-three-dots-vertical"></i>
+            </div>
         </div>
         <div class="stat-value">{{ content|selectattr('type', 'equalto', 'experience')|list|length }}</div>
         <div class="stat-label">Experiences</div>
@@ -366,7 +173,9 @@
             <div class="card-icon">
                 <i class="bi bi-file-text"></i>
             </div>
-            <div class="more-options">⋮</div>
+            <div class="more-options">
+                <i class="bi bi-three-dots-vertical"></i>
+            </div>
         </div>
         <div class="stat-value">{{ content|selectattr('type', 'equalto', 'blog')|list|length }}</div>
         <div class="stat-label">Blog Posts</div>
@@ -376,7 +185,9 @@
             <div class="card-icon">
                 <i class="bi bi-journal"></i>
             </div>
-            <div class="more-options">⋮</div>
+            <div class="more-options">
+                <i class="bi bi-three-dots-vertical"></i>
+            </div>
         </div>
         <div class="stat-value">{{ journal_entries|length }}</div>
         <div class="stat-label">Journal Entries</div>
@@ -387,40 +198,51 @@
 <div class="dashboard-layout">
     <!-- Left Column -->
     <div class="dashboard-left">
-        <!-- Content Analytics -->
-        <div class="analytics-container">
-            <h2 class="activity-title">Content Analytics</h2>
-            <div class="chart-container">
-                <div class="admin-chart-bars">
-                    <div class="admin-chart-bar" style="height: 60%;">
-                        <span class="admin-chart-bar-label">Mon</span>
-                        <span class="admin-chart-bar-value">24</span>
+        <!-- GitHub-style Activity Calendar -->
+        <div class="github-calendar">
+            <div class="calendar-header">
+                <h2 class="calendar-title">Contribution Activity</h2>
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <span>Less</span>
+                        <div class="legend-color legend-less"></div>
                     </div>
-                    <div class="admin-chart-bar" style="height: 40%;">
-                        <span class="admin-chart-bar-label">Tue</span>
-                        <span class="admin-chart-bar-value">16</span>
+                    <div class="legend-item">
+                        <div class="legend-color level-1"></div>
+                        <div class="legend-color level-2"></div>
+                        <div class="legend-color level-3"></div>
+                        <div class="legend-color level-4"></div>
                     </div>
-                    <div class="admin-chart-bar" style="height: 75%;">
-                        <span class="admin-chart-bar-label">Wed</span>
-                        <span class="admin-chart-bar-value">30</span>
-                    </div>
-                    <div class="admin-chart-bar" style="height: 90%;">
-                        <span class="admin-chart-bar-label">Thu</span>
-                        <span class="admin-chart-bar-value">36</span>
-                    </div>
-                    <div class="admin-chart-bar" style="height: 65%;">
-                        <span class="admin-chart-bar-label">Fri</span>
-                        <span class="admin-chart-bar-value">26</span>
-                    </div>
-                    <div class="admin-chart-bar" style="height: 30%;">
-                        <span class="admin-chart-bar-label">Sat</span>
-                        <span class="admin-chart-bar-value">12</span>
-                    </div>
-                    <div class="admin-chart-bar" style="height: 25%;">
-                        <span class="admin-chart-bar-label">Sun</span>
-                        <span class="admin-chart-bar-value">10</span>
+                    <div class="legend-item">
+                        <div class="legend-color legend-more"></div>
+                        <span>More</span>
                     </div>
                 </div>
+            </div>
+            
+            <div class="calendar-grid">
+                <!-- Generate calendar squares dynamically in production -->
+                {% for week in range(1, 53) %}
+                    {% for day in range(1, 8) %}
+                        {% set level = (((week + day) % 5)) %}
+                        <div class="calendar-day level-{{ level }}"></div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            
+            <div class="calendar-months">
+                <div>Jan</div>
+                <div>Feb</div>
+                <div>Mar</div>
+                <div>Apr</div>
+                <div>May</div>
+                <div>Jun</div>
+                <div>Jul</div>
+                <div>Aug</div>
+                <div>Sep</div>
+                <div>Oct</div>
+                <div>Nov</div>
+                <div>Dec</div>
             </div>
         </div>
 
@@ -547,15 +369,74 @@ document.addEventListener('DOMContentLoaded', function() {
     if (userMenuButton && userMenu) {
         userMenuButton.addEventListener('click', function(e) {
             userMenu.classList.toggle('show');
-            e.stopPropagation();
         });
         
         document.addEventListener('click', function(e) {
-            if (!userMenu.contains(e.target) && !userMenuButton.contains(e.target)) {
+            if (!userMenuButton.contains(e.target) && !userMenu.contains(e.target)) {
                 userMenu.classList.remove('show');
             }
         });
     }
+    
+    // Calendar hover effects
+    const calendarDays = document.querySelectorAll('.calendar-day');
+    calendarDays.forEach(day => {
+        // Generate random date for demo
+        const randomDate = new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+        const formattedDate = randomDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        // Generate random contributions for demo
+        const level = day.classList[1].split('-')[1];
+        const contributions = level === '0' ? '0' : Math.floor(Math.random() * 5 * level) + 1;
+        
+        // Add tooltip functionality
+        day.setAttribute('title', `${contributions} contributions on ${formattedDate}`);
+        
+        // Enhanced hover effect
+        day.addEventListener('mouseover', function() {
+            this.style.transform = 'scale(1.3)';
+            this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
+            this.style.zIndex = '10';
+        });
+        
+        day.addEventListener('mouseout', function() {
+            this.style.transform = '';
+            this.style.boxShadow = '';
+            this.style.zIndex = '';
+        });
+    });
+    
+    // Stat cards animation
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        card.addEventListener('mouseover', function() {
+            // Add subtle shadow pulse animation
+            this.style.animation = 'shadowPulse 1.5s infinite alternate';
+        });
+        
+        card.addEventListener('mouseout', function() {
+            this.style.animation = '';
+        });
+    });
+    
+    // Define the shadow pulse animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes shadowPulse {
+            0% {
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+            }
+            100% {
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            }
+        }
+    `;
+    document.head.appendChild(style);
 });
 </script>
 {% endblock %} 
