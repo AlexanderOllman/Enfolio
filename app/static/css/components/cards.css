@@ -3,80 +3,69 @@
 /* Base Card */
 .card {
   background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  border: 1px solid var(--color-grey-300);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  border: none;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
 }
 
+/* Remove the active color bar on hover */
 .card:after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 0;
-  background: var(--color-primary);
-  transition: height 0.3s ease;
-}
-
-.card:hover:after {
-  height: 100%;
+  content: none;
 }
 
 .card-image {
   width: 100%;
-  height: 200px;
+  height: 180px;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
 
 .card:hover .card-image {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .card-header {
-  padding: var(--spacing-3) var(--spacing-4);
-  border-bottom: 1px solid var(--color-grey-200);
-  background-color: var(--color-grey-100);
+  padding: var(--spacing-4) var(--spacing-4);
+  border-bottom: none;
+  background-color: transparent;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background-color 0.3s ease;
 }
 
 .card:hover .card-header {
-  background-color: white;
+  background-color: transparent;
 }
 
 .card-title {
   font-size: var(--font-size-lg);
   font-weight: 600;
-  color: var(--color-grey-800);
+  color: var(--color-grey-900);
   margin: 0;
-  transition: transform 0.3s ease;
+  transition: none;
 }
 
 .card:hover .card-title {
-  transform: translateX(8px);
+  transform: none;
 }
 
 .card-subtitle {
   font-size: var(--font-size-sm);
   color: var(--color-grey-600);
   margin-top: var(--spacing-1);
-  transition: transform 0.3s ease;
+  transition: none;
 }
 
 .card:hover .card-subtitle {
-  transform: translateX(8px);
+  transform: none;
 }
 
 .card-body {
@@ -93,21 +82,21 @@
 
 .card-footer {
   padding: var(--spacing-3) var(--spacing-4);
-  background-color: var(--color-grey-100);
-  border-top: 1px solid var(--color-grey-200);
+  background-color: transparent;
+  border-top: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background-color 0.3s ease;
 }
 
 .card:hover .card-footer {
-  background-color: white;
+  background-color: transparent;
 }
 
 /* Card Variants */
 .card-primary {
-  border-top: 4px solid var(--color-primary);
+  border-top: none;
+  background-color: white;
 }
 
 .card-primary .card-header {
@@ -116,7 +105,7 @@
 
 .card-horizontal {
   display: flex;
-  height: 200px;
+  height: 160px;
 }
 
 .card-horizontal .card-image {
@@ -150,7 +139,7 @@
 
 .card-btn {
   padding: var(--spacing-2) var(--spacing-3);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   font-size: var(--font-size-sm);
   font-weight: 500;
   display: inline-flex;
@@ -165,25 +154,25 @@
   background-color: var(--color-primary);
   color: white;
   border: none;
-  box-shadow: 0 2px 4px rgba(0, 66, 37, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 66, 37, 0.1);
 }
 
 .card-btn-primary:hover {
   background-color: var(--color-primary-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 66, 37, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 66, 37, 0.15);
 }
 
 .card-btn-secondary {
-  background-color: var(--color-grey-200);
+  background-color: var(--color-grey-100);
   color: var(--color-grey-700);
-  border: 1px solid var(--color-grey-300);
+  border: 1px solid var(--color-grey-200);
 }
 
 .card-btn-secondary:hover {
-  background-color: var(--color-grey-300);
+  background-color: var(--color-grey-200);
   color: var(--color-grey-800);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .card-btn i {
@@ -204,9 +193,9 @@
 }
 
 .card-tag {
-  background-color: var(--color-grey-100);
-  color: var(--color-grey-700);
-  border: 1px solid var(--color-grey-300);
+  background-color: rgba(var(--color-primary-rgb), 0.1);
+  color: var(--color-primary);
+  border: none;
   border-radius: 20px;
   padding: var(--spacing-1) var(--spacing-2);
   font-size: var(--font-size-xs);
@@ -215,64 +204,174 @@
 }
 
 .card-tag:hover {
-  background-color: var(--color-grey-200);
-  color: var(--color-grey-800);
+  background-color: rgba(var(--color-primary-rgb), 0.15);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Card Images with Overlay */
-.card-overlay {
+/* Progress indicators - new styles based on the image */
+.progress-circle {
   position: relative;
-  overflow: hidden;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
 }
 
-.card-overlay .card-image {
-  width: 100%;
-  height: 300px;
-  object-fit: cover;
-  transition: transform 0.5s ease;
+.progress-circle-bg {
+  fill: none;
+  stroke: var(--color-grey-200);
+  stroke-width: 8;
 }
 
-.card-overlay:hover .card-image {
-  transform: scale(1.1);
+.progress-circle-fill {
+  fill: none;
+  stroke: var(--color-green-accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 0.8s ease;
 }
 
-.card-overlay-content {
+.progress-percent {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: var(--spacing-4);
-  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-grey-900);
+}
+
+.progress-label {
+  text-align: center;
+  margin-top: var(--spacing-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-grey-700);
+}
+
+/* Bar chart */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 180px;
+  margin-top: var(--spacing-4);
+}
+
+.bar-chart-bar {
+  flex: 1;
+  margin: 0 2px;
+  background-color: var(--color-grey-200);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  min-height: 20px;
+  transition: height 0.5s ease;
+}
+
+.bar-chart-bar.active {
+  background-color: var(--color-green-accent);
+}
+
+.bar-chart-label {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--font-size-xs);
+  color: var(--color-grey-700);
+  white-space: nowrap;
+}
+
+/* Card background color options */
+.card-bg-green {
+  background-color: var(--color-card-green);
+}
+
+.card-bg-blue {
+  background-color: var(--color-card-blue);
+}
+
+.card-bg-orange {
+  background-color: var(--color-card-orange);
+}
+
+.card-bg-purple {
+  background-color: var(--color-card-purple);
+}
+
+/* 3D elements */
+.card-3d-element {
+  position: relative;
+}
+
+.card-decorative-item {
+  position: absolute;
+  z-index: 1;
+}
+
+/* Calendar styles */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-3);
+}
+
+.calendar-navigation {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.calendar-nav-btn {
+  background-color: var(--color-grey-100);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.calendar-nav-btn:hover {
+  background-color: var(--color-grey-200);
+}
+
+.calendar-day {
+  text-align: center;
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+  background-color: var(--color-grey-100);
+}
+
+.calendar-day.active {
+  background-color: var(--color-primary);
   color: white;
-  transform: translateY(0);
-  transition: transform 0.3s ease;
 }
 
-.card-overlay:hover .card-overlay-content {
-  transform: translateY(-8px);
+.calendar-day-header {
+  text-align: center;
+  color: var(--color-grey-600);
+  font-size: var(--font-size-xs);
+  padding-bottom: var(--spacing-1);
 }
 
-.card-overlay .card-title,
-.card-overlay .card-subtitle {
-  color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-
-/* Card Animation */
-@keyframes cardPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
-
-.card-animated {
-  animation: cardPulse 2s infinite;
-  box-shadow: 0 0 20px rgba(0, 66, 37, 0.3);
-}
-
-/* Card Responsive */
+/* Media queries */
 @media (max-width: 768px) {
   .card-horizontal {
     flex-direction: column;
@@ -285,7 +384,7 @@
   }
   
   .card-horizontal .card-image {
-    height: 200px;
+    height: 180px;
   }
   
   .card-grid {
@@ -293,7 +392,7 @@
   }
 }
 
-/* Project Card */
+/* Project card specific styles */
 .project-card {
   display: flex;
   flex-direction: column;
@@ -303,96 +402,95 @@
 .project-card-tech {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-1);
-  margin-top: var(--spacing-2);
+  gap: var(--spacing-2);
+  margin: var(--spacing-3) 0;
 }
 
 .project-card-tech-item {
-  font-size: 0.75rem;
-  padding: 0.25em 0.75em;
-  background: var(--color-light);
-  border-radius: 999px;
-  color: var(--color-secondary);
+  background-color: rgba(var(--color-primary-rgb), 0.1);
+  color: var(--color-primary);
+  border-radius: 20px;
+  padding: var(--spacing-1) var(--spacing-2);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
 }
 
-/* Experience Card */
+/* Experience card specific styles */
 .experience-card {
-  border-left: 4px solid var(--color-primary);
-  margin-bottom: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
 }
 
 .experience-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  margin-bottom: var(--spacing-3);
 }
 
 .experience-card-date {
-  font-size: 0.875rem;
-  color: var(--color-secondary);
+  font-size: var(--font-size-sm);
+  color: var(--color-grey-600);
+  white-space: nowrap;
 }
 
-/* Blog Card */
+/* Blog card specific styles */
 .blog-card {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .blog-card-meta {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+  color: var(--color-grey-600);
+  font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-2);
-  color: var(--color-secondary);
-  font-size: 0.875rem;
 }
 
-/* Element Card (for drag and drop) */
+/* Element card (dashboard item) */
 .element-card {
-  cursor: move;
-  border: 2px solid transparent;
-  transition: var(--transition-base);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
 }
 
 .element-card:hover {
-  border-color: var(--color-light);
-  background-color: var(--color-light);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.07);
 }
 
 .element-card:active {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.99);
 }
 
 .element-card i {
-  color: var(--color-secondary);
+  font-size: 1.2em;
 }
 
-/* Drop Zone */
+/* Dropzone component */
 .drop-zone {
-  position: relative;
-  padding: var(--spacing-2);
-  border: 2px dashed var(--color-border);
-  border-radius: var(--border-radius);
-  transition: var(--transition-base);
+  border: 2px dashed var(--color-grey-300);
+  border-radius: var(--border-radius-xl);
+  padding: var(--spacing-5);
+  text-align: center;
+  transition: all 0.2s ease;
 }
 
 .drop-zone.dragover {
-  background: rgba(var(--color-primary-rgb), 0.1);
   border-color: var(--color-primary);
+  background-color: rgba(var(--color-primary-rgb), 0.05);
 }
 
 .drop-zone::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 2px;
-  background: transparent;
-  transform: translateY(-50%);
-  transition: var(--transition-base);
+  content: 'Drag files here or click to upload';
+  display: block;
+  color: var(--color-grey-500);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-2);
 }
 
 .drop-zone.dragover::after {
-  background: var(--color-primary);
+  color: var(--color-primary);
 } 

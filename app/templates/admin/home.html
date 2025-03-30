@@ -10,14 +10,14 @@
     }
 
     body {
-        background-color: #e7ecf0;
+        background-color: #f8f1e4;
     }
 
     /* Main content */
     .admin-main {
         padding: 30px;
         overflow-y: auto;
-        background-color: #e7ecf0;
+        background-color: #f8f1e4;
     }
 
     /* Header styles */
@@ -41,17 +41,18 @@
     }
 
     .header-icon {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #004225;
-        background-color: white;
+        background-color: rgba(255, 255, 255, 0.5);
         border-radius: 50%;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
         cursor: pointer;
         transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
     }
 
     .header-icon:hover {
@@ -61,65 +62,532 @@
         color: white;
     }
 
-    /* Stats cards container */
-    .stats-container {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-    }
-
-    /* Dashboard sections layout */
-    .dashboard-layout {
-        display: flex;
-        gap: 30px;
-        flex-wrap: wrap;
-    }
-
-    .dashboard-left {
-        flex: 2;
-        min-width: 300px;
-    }
-
-    .dashboard-right {
-        flex: 1;
-        min-width: 280px;
-    }
-
-    /* Fix for calendar grid */
-    .calendar-grid {
+    /* Dashboard layout - 3/4 - 1/4 split */
+    .dashboard-container {
         display: grid;
-        grid-template-columns: repeat(53, 1fr);
-        grid-template-rows: repeat(7, 1fr);
-        gap: 3px;
+        grid-template-columns: 3fr 1fr;
+        gap: 24px;
+    }
+
+    /* Main column (3/4 width) */
+    .main-column {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Side column (1/4 width) */
+    .side-column {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Card base style - common to all cards */
+    .card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08));
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .card:hover {
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        transform: translateY(-3px);
+    }
+
+    /* Stat Cards with Quick Action hover effect - in a row of 4 */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .stat-card {
+        aspect-ratio: 1/1;
+        padding: 20px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    /* Colored borders for stat cards */
+    .stat-card-projects {
+        border-bottom: 5px solid #4CAF50;
+    }
+
+    .stat-card-experiences {
+        border-bottom: 5px solid #2196F3;
+    }
+
+    .stat-card-blog {
+        border-bottom: 5px solid #FF9800;
+    }
+
+    .stat-card-journal {
+        border-bottom: 5px solid #9C27B0;
+    }
+
+    /* Front side (stats) */
+    .stat-front {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        background: inherit;
+        z-index: 2;
+    }
+
+    /* Back side (quick actions) */
+    .stat-back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        background: inherit;
+        z-index: 1;
+        text-decoration: none;
+    }
+
+    .stat-card:hover .stat-front {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    .stat-card:hover .stat-back {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .card-icon {
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+    }
+
+    .stat-card-projects .card-icon {
+        color: #4CAF50;
+    }
+
+    .stat-card-experiences .card-icon {
+        color: #2196F3;
+    }
+
+    .stat-card-blog .card-icon {
+        color: #FF9800;
+    }
+
+    .stat-card-journal .card-icon {
+        color: #9C27B0;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #212529;
+    }
+
+    .stat-label {
+        font-size: 15px;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    /* Quick Action style (for back of cards) */
+    .quick-action-icon {
+        font-size: 36px;
+        margin-bottom: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover .quick-action-icon {
+        transform: scale(1.1);
+    }
+
+    .quick-action-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #343a40;
+        margin-bottom: 6px;
+        text-align: center;
+    }
+
+    .quick-action-subtitle {
+        font-size: 13px;
+        color: #6c757d;
+        line-height: 1.3;
+        text-align: center;
+    }
+
+    .stat-card-projects .quick-action-icon {
+        color: #4CAF50;
+    }
+
+    .stat-card-experiences .quick-action-icon {
+        color: #2196F3;
+    }
+
+    .stat-card-blog .quick-action-icon {
+        color: #FF9800;
+    }
+
+    .stat-card-journal .quick-action-icon {
+        color: #9C27B0;
+    }
+
+    /* Activity and Calendar Section - side by side with consistent height */
+    .activity-calendar-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    /* Calendar - Monthly View */
+    .monthly-calendar {
+        padding: 24px;
+        height: 420px;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .calendar-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #343a40;
+        margin: 0;
+    }
+
+    .calendar-nav {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .calendar-nav-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .calendar-nav-btn:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    .calendar-month-year {
+        font-weight: 500;
+        color: #343a40;
+    }
+
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .weekday {
+        text-align: center;
+        font-weight: 500;
+        font-size: 13px;
+        color: #6c757d;
+        padding: 6px 0;
+    }
+
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+    }
+
+    .calendar-day {
+        aspect-ratio: 1/1;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: #343a40;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .calendar-day:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    .calendar-day.has-activity::after {
+        content: '';
+        position: absolute;
+        bottom: 3px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background-color: #4CAF50;
+    }
+
+    .calendar-day.today {
+        background-color: rgba(0, 66, 37, 0.8);
+        color: white;
+        font-weight: 600;
+    }
+
+    .calendar-day.other-month {
+        color: #adb5bd;
+    }
+
+    /* Recent Activity */
+    .activity-container {
+        padding: 24px;
+        height: 420px;
+        overflow-y: auto;
+    }
+
+    .activity-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #343a40;
+        margin: 0 0 20px 0;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .activity-item:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .activity-avatar {
+        font-size: 24px;
+        margin-right: 16px;
+    }
+
+    .activity-avatar i.bi-code-slash {
+        color: #4CAF50;
+    }
+
+    .activity-avatar i.bi-building {
+        color: #2196F3;
+    }
+
+    .activity-avatar i.bi-pencil-square {
+        color: #FF9800;
+    }
+
+    .activity-avatar i.bi-book {
+        color: #9C27B0;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-title-text {
+        font-weight: 600;
+        font-size: 15px;
+        color: #343a40;
         margin-bottom: 4px;
     }
 
-    /* Make legend colors match the calendar grid */
-    .legend-color.level-1 {
-        background-color: #c6e48b;
+    .activity-subtitle {
+        font-size: 13px;
+        color: #6c757d;
+    }
+
+    .activity-status {
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+    .published {
+        background-color: rgba(118, 182, 105, 0.2);
+        color: #4CAF50;
+    }
+
+    .draft {
+        background-color: rgba(255, 152, 0, 0.2);
+        color: #FF9800;
+    }
+
+    /* Journal entries */
+    .journal-container {
+        padding: 24px;
+        height: 100%;
+        min-height: 864px; /* Match height of main column */
+    }
+
+    .journal-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #343a40;
+        margin: 0 0 20px 0;
+    }
+
+    .journal-item {
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .journal-item:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .journal-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .journal-content {
+        font-size: 13px;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+
+    .view-all-btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: rgba(118, 182, 105, 0.2);
+        color: #4CAF50;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        text-align: center;
+        margin-top: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .view-all-btn:hover {
+        background-color: rgba(118, 182, 105, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .empty-state i {
+        font-size: 40px;
+        color: rgba(206, 212, 218, 0.7);
+        margin-bottom: 16px;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        margin-bottom: 20px;
+        font-size: 15px;
     }
     
-    .legend-color.level-2 {
-        background-color: #7bc96f;
+    /* Create Journal Entry button (in empty state) */
+    .create-journal-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: rgba(156, 39, 176, 0.2);
+        color: #9C27B0;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
     }
     
-    .legend-color.level-3 {
-        background-color: #239a3b;
+    .create-journal-btn:hover {
+        background-color: rgba(156, 39, 176, 0.3);
+        transform: translateY(-2px);
     }
-    
-    .legend-color.level-4 {
-        background-color: #004225;
-    }
-    
+
     /* Responsive adjustments */
-    @media (max-width: 992px) {
-        .dashboard-layout {
-            flex-direction: column;
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
         
-        .dashboard-left, .dashboard-right {
-            width: 100%;
+        .activity-calendar-section {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .dashboard-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .journal-container {
+            min-height: auto;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .admin-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .header-icons {
+            align-self: flex-end;
         }
     }
 </style>
@@ -128,7 +596,7 @@
 {% block content %}
 <!-- Header -->
 <div class="admin-header">
-    <h1 class="greeting">Welcome back, {{ current_user.username }}!</h1>
+    <h1 class="greeting">Welcome back, admin!</h1>
     <div class="header-icons">
         <a href="{{ url_for('main.index') }}" class="header-icon" title="View Site">
             <i class="bi bi-eye"></i>
@@ -142,200 +610,199 @@
     </div>
 </div>
 
-<!-- Stats Cards -->
-<div class="stats-container">
-    <div class="stat-card">
-        <div class="card-header">
-            <div class="card-icon">
-                <i class="bi bi-code-square"></i>
-            </div>
-            <div class="more-options">
-                <i class="bi bi-three-dots-vertical"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ content|selectattr('type', 'equalto', 'project')|list|length }}</div>
-        <div class="stat-label">Projects</div>
-    </div>
-    <div class="stat-card">
-        <div class="card-header">
-            <div class="card-icon">
-                <i class="bi bi-briefcase"></i>
-            </div>
-            <div class="more-options">
-                <i class="bi bi-three-dots-vertical"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ content|selectattr('type', 'equalto', 'experience')|list|length }}</div>
-        <div class="stat-label">Experiences</div>
-    </div>
-    <div class="stat-card">
-        <div class="card-header">
-            <div class="card-icon">
-                <i class="bi bi-file-text"></i>
-            </div>
-            <div class="more-options">
-                <i class="bi bi-three-dots-vertical"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ content|selectattr('type', 'equalto', 'blog')|list|length }}</div>
-        <div class="stat-label">Blog Posts</div>
-    </div>
-    <div class="stat-card">
-        <div class="card-header">
-            <div class="card-icon">
-                <i class="bi bi-journal"></i>
-            </div>
-            <div class="more-options">
-                <i class="bi bi-three-dots-vertical"></i>
-            </div>
-        </div>
-        <div class="stat-value">{{ journal_entries|length }}</div>
-        <div class="stat-label">Journal Entries</div>
-    </div>
-</div>
-
-<!-- Dashboard Layout -->
-<div class="dashboard-layout">
-    <!-- Left Column -->
-    <div class="dashboard-left">
-        <!-- GitHub-style Activity Calendar -->
-        <div class="github-calendar">
-            <div class="calendar-header">
-                <h2 class="calendar-title">Contribution Activity</h2>
-                <div class="calendar-legend">
-                    <div class="legend-item">
-                        <span>Less</span>
-                        <div class="legend-color legend-less"></div>
+<!-- Dashboard Layout with 3/4 - 1/4 split -->
+<div class="dashboard-container">
+    <!-- Main Column (3/4 width) -->
+    <div class="main-column">
+        <!-- Stats Cards with Quick Action hover effect - now in a row of 4 -->
+        <div class="stats-grid">
+            <!-- Projects Card -->
+            <div class="stat-card card stat-card-projects">
+                <!-- Front (Stats) -->
+                <div class="stat-front">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="bi bi-code-slash"></i>
+                        </div>
+                        <div class="more-options">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </div>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color level-1"></div>
-                        <div class="legend-color level-2"></div>
-                        <div class="legend-color level-3"></div>
-                        <div class="legend-color level-4"></div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color legend-more"></div>
-                        <span>More</span>
-                    </div>
+                    <div class="stat-value">{{ content|selectattr('type', 'equalto', 'project')|list|length }}</div>
+                    <div class="stat-label">Projects</div>
                 </div>
+                
+                <!-- Back (Quick Action) -->
+                <a href="{{ url_for('main.create_new') }}?type=project" class="stat-back">
+                    <div class="quick-action-icon">
+                        <i class="bi bi-code-square"></i>
+                    </div>
+                    <div class="quick-action-title">New Project</div>
+                    <div class="quick-action-subtitle">Add a project to your portfolio</div>
+                </a>
             </div>
             
-            <div class="calendar-grid">
-                <!-- Generate calendar squares dynamically in production -->
-                {% for week in range(1, 53) %}
-                    {% for day in range(1, 8) %}
-                        {% set level = (((week + day) % 5)) %}
-                        <div class="calendar-day level-{{ level }}"></div>
+            <!-- Experiences Card -->
+            <div class="stat-card card stat-card-experiences">
+                <!-- Front (Stats) -->
+                <div class="stat-front">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div class="more-options">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ content|selectattr('type', 'equalto', 'experience')|list|length }}</div>
+                    <div class="stat-label">Experiences</div>
+                </div>
+                
+                <!-- Back (Quick Action) -->
+                <a href="{{ url_for('main.create_new') }}?type=experience" class="stat-back">
+                    <div class="quick-action-icon">
+                        <i class="bi bi-briefcase"></i>
+                    </div>
+                    <div class="quick-action-title">New Experience</div>
+                    <div class="quick-action-subtitle">Add work or education experience</div>
+                </a>
+            </div>
+            
+            <!-- Blog Posts Card -->
+            <div class="stat-card card stat-card-blog">
+                <!-- Front (Stats) -->
+                <div class="stat-front">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <div class="more-options">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ content|selectattr('type', 'equalto', 'blog')|list|length }}</div>
+                    <div class="stat-label">Blog Posts</div>
+                </div>
+                
+                <!-- Back (Quick Action) -->
+                <a href="{{ url_for('main.create_new') }}?type=blog" class="stat-back">
+                    <div class="quick-action-icon">
+                        <i class="bi bi-file-earmark-richtext"></i>
+                    </div>
+                    <div class="quick-action-title">New Blog Post</div>
+                    <div class="quick-action-subtitle">Share your thoughts with the world</div>
+                </a>
+            </div>
+            
+            <!-- Journal Entries Card -->
+            <div class="stat-card card stat-card-journal">
+                <!-- Front (Stats) -->
+                <div class="stat-front">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div class="more-options">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ journal_entries|length }}</div>
+                    <div class="stat-label">Journal Entries</div>
+                </div>
+                
+                <!-- Back (Quick Action) -->
+                <a href="{{ url_for('main.create_new') }}?type=journal" class="stat-back">
+                    <div class="quick-action-icon">
+                        <i class="bi bi-journal-plus"></i>
+                    </div>
+                    <div class="quick-action-title">New Journal Entry</div>
+                    <div class="quick-action-subtitle">Document your journey</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Activity and Calendar Section - Side by Side -->
+        <div class="activity-calendar-section">
+            <!-- Calendar - Monthly View -->
+            <div class="monthly-calendar card">
+                <div class="calendar-header">
+                    <h2 class="calendar-title">Contribution Activity</h2>
+                    <div class="calendar-nav">
+                        <button class="calendar-nav-btn prev-month">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <span class="calendar-month-year">August 2023</span>
+                        <button class="calendar-nav-btn next-month">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="calendar-weekdays">
+                    <div class="weekday">Sun</div>
+                    <div class="weekday">Mon</div>
+                    <div class="weekday">Tue</div>
+                    <div class="weekday">Wed</div>
+                    <div class="weekday">Thu</div>
+                    <div class="weekday">Fri</div>
+                    <div class="weekday">Sat</div>
+                </div>
+                
+                <div class="calendar-days" id="calendarDays">
+                    <!-- Calendar days will be inserted by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="activity-container card">
+                <h2 class="activity-title">Recent Activity</h2>
+                {% if recent_content %}
+                    {% for item in recent_content %}
+                    <div class="activity-item">
+                        <div class="activity-avatar">
+                            {% if item.type == 'project' %}
+                                <i class="bi bi-code-slash"></i>
+                            {% elif item.type == 'experience' %}
+                                <i class="bi bi-building"></i>
+                            {% elif item.type == 'blog' %}
+                                <i class="bi bi-pencil-square"></i>
+                            {% else %}
+                                <i class="bi bi-book"></i>
+                            {% endif %}
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title-text">{{ item.title }}</div>
+                            <div class="activity-subtitle">{{ item.type|title }} · {{ item.date_modified.strftime('%b %d, %Y') }}</div>
+                        </div>
+                        <div class="activity-status {% if item.status == 'published' %}published{% else %}draft{% endif %}">
+                            {% if item.status == 'published' %}Published{% else %}Draft{% endif %}
+                        </div>
+                    </div>
                     {% endfor %}
-                {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p>No recent activity to display</p>
+                        <a href="{{ url_for('main.create_new') }}?type=project" class="view-all-btn">
+                            Create Something New
+                        </a>
+                    </div>
+                {% endif %}
             </div>
-            
-            <div class="calendar-months">
-                <div>Jan</div>
-                <div>Feb</div>
-                <div>Mar</div>
-                <div>Apr</div>
-                <div>May</div>
-                <div>Jun</div>
-                <div>Jul</div>
-                <div>Aug</div>
-                <div>Sep</div>
-                <div>Oct</div>
-                <div>Nov</div>
-                <div>Dec</div>
-            </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="activity-container">
-            <h2 class="activity-title">Recent Activity</h2>
-            {% if recent_content %}
-                {% for item in recent_content %}
-                <div class="activity-item">
-                    <div class="activity-avatar">
-                        {% if item.type == 'project' %}
-                            <i class="bi bi-code-square"></i>
-                        {% elif item.type == 'experience' %}
-                            <i class="bi bi-briefcase"></i>
-                        {% elif item.type == 'blog' %}
-                            <i class="bi bi-file-text"></i>
-                        {% else %}
-                            <i class="bi bi-journal"></i>
-                        {% endif %}
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title-text">{{ item.title }}</div>
-                        <div class="activity-subtitle">{{ item.type|title }} · {{ item.date_modified.strftime('%B %d, %Y') }}</div>
-                    </div>
-                    <div class="activity-status {% if item.status == 'published' %}published{% else %}draft{% endif %}">
-                        {% if item.status == 'published' %}Published{% else %}Draft{% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">
-                    <i class="bi bi-inbox"></i>
-                    <p>No recent activity to display</p>
-                    <a href="{{ url_for('main.create_new') }}?type=project" class="view-all-btn">
-                        Create Something New
-                    </a>
-                </div>
-            {% endif %}
         </div>
     </div>
 
-    <!-- Right Column -->
-    <div class="dashboard-right">
-        <!-- Quick Actions -->
-        <div class="todo-container">
-            <h2 class="todo-title">Quick Actions</h2>
-            <a href="{{ url_for('main.create_new') }}?type=project" class="todo-item">
-                <div class="todo-icon">
-                    <i class="bi bi-code-square"></i>
-                </div>
-                <div class="todo-content">
-                    <div class="todo-task">New Project</div>
-                    <div class="todo-description">Add a project to your portfolio</div>
-                </div>
-            </a>
-            <a href="{{ url_for('main.create_new') }}?type=experience" class="todo-item">
-                <div class="todo-icon">
-                    <i class="bi bi-briefcase"></i>
-                </div>
-                <div class="todo-content">
-                    <div class="todo-task">New Experience</div>
-                    <div class="todo-description">Add work or education experience</div>
-                </div>
-            </a>
-            <a href="{{ url_for('main.create_new') }}?type=blog" class="todo-item">
-                <div class="todo-icon">
-                    <i class="bi bi-file-text"></i>
-                </div>
-                <div class="todo-content">
-                    <div class="todo-task">New Blog Post</div>
-                    <div class="todo-description">Share your thoughts with the world</div>
-                </div>
-            </a>
-            <a href="{{ url_for('main.create_new') }}?type=journal" class="todo-item">
-                <div class="todo-icon">
-                    <i class="bi bi-journal-plus"></i>
-                </div>
-                <div class="todo-content">
-                    <div class="todo-task">New Journal Entry</div>
-                    <div class="todo-description">Document your journey</div>
-                </div>
-            </a>
-        </div>
-
+    <!-- Side Column (1/4 width) -->
+    <div class="side-column">
         <!-- Journal Entries -->
-        <div class="journal-container">
+        <div class="journal-container card">
             <h2 class="journal-title">Recent Journal Entries</h2>
             {% if recent_journal_entries %}
-                {% for entry in recent_journal_entries[:3] %}
+                {% for entry in recent_journal_entries[:5] %}
                 <div class="journal-item">
                     <div class="journal-meta">
-                        <strong>{{ entry.related_content.title }}</strong>
-                        <small>{{ entry.date_created.strftime('%B %d') }}</small>
+                        <strong>{{ entry.related_content.title if entry.related_content else 'Untitled' }}</strong>
+                        <small>{{ entry.date_created.strftime('%b %d') }}</small>
                     </div>
                     <div class="journal-content">
                         {{ entry.content[:100] }}{% if entry.content|length > 100 %}...{% endif %}
@@ -347,10 +814,10 @@
                 </a>
             {% else %}
                 <div class="empty-state">
-                    <i class="bi bi-journal"></i>
+                    <i class="bi bi-journal-text"></i>
                     <p>No journal entries yet</p>
-                    <a href="{{ url_for('main.create_new', type='journal') }}" class="view-all-btn">
-                        Create First Entry
+                    <a href="{{ url_for('main.manage_journal') }}" class="create-journal-btn">
+                        Create Journal Entry
                     </a>
                 </div>
             {% endif %}
@@ -362,81 +829,173 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const userMenuButton = document.getElementById('userMenuButton');
-    const userMenu = document.getElementById('userMenu');
+    // Enhanced glass card effect
+    const cards = document.querySelectorAll('.card');
     
-    // Only add event listeners if elements exist
-    if (userMenuButton && userMenu) {
-        userMenuButton.addEventListener('click', function(e) {
-            userMenu.classList.toggle('show');
-        });
-        
-        document.addEventListener('click', function(e) {
-            if (!userMenuButton.contains(e.target) && !userMenu.contains(e.target)) {
-                userMenu.classList.remove('show');
+    cards.forEach(card => {
+        card.addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Calculate position as percentage
+            const posX = (x / rect.width) * 100;
+            const posY = (y / rect.height) * 100;
+            
+            // Only apply to elements that don't have stat-front class as direct child
+            if (!this.classList.contains('stat-card') || e.target.closest('.stat-back')) {
+                // Create a dynamic gradient that follows the cursor
+                this.style.background = `
+                    linear-gradient(
+                        135deg, 
+                        rgba(255, 255, 255, 0.25) 0%, 
+                        rgba(255, 255, 255, 0.1) 50%, 
+                        rgba(255, 255, 255, 0.05) 100%
+                    ),
+                    radial-gradient(
+                        circle at ${posX}% ${posY}%, 
+                        rgba(255, 255, 255, 0.25) 0%, 
+                        rgba(255, 255, 255, 0.1) 30%, 
+                        transparent 70%
+                    )
+                `;
+                
+                // Add a subtle reflection effect
+                this.style.boxShadow = `
+                    0 10px 30px rgba(0, 0, 0, 0.1),
+                    inset 0 0 ${Math.max(rect.width, rect.height) / 3}px rgba(255, 255, 255, 0.2)
+                `;
             }
         });
-    }
-    
-    // Calendar hover effects
-    const calendarDays = document.querySelectorAll('.calendar-day');
-    calendarDays.forEach(day => {
-        // Generate random date for demo
-        const randomDate = new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
-        const formattedDate = randomDate.toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-        });
         
-        // Generate random contributions for demo
-        const level = day.classList[1].split('-')[1];
-        const contributions = level === '0' ? '0' : Math.floor(Math.random() * 5 * level) + 1;
-        
-        // Add tooltip functionality
-        day.setAttribute('title', `${contributions} contributions on ${formattedDate}`);
-        
-        // Enhanced hover effect
-        day.addEventListener('mouseover', function() {
-            this.style.transform = 'scale(1.3)';
-            this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
-            this.style.zIndex = '10';
-        });
-        
-        day.addEventListener('mouseout', function() {
-            this.style.transform = '';
-            this.style.boxShadow = '';
-            this.style.zIndex = '';
+        // Reset the styles on mouseout
+        card.addEventListener('mouseleave', function() {
+            // Use the same background for all cards
+            this.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08))';
+            this.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.05)';
         });
     });
     
-    // Stat cards animation
-    const statCards = document.querySelectorAll('.stat-card');
-    statCards.forEach(card => {
-        card.addEventListener('mouseover', function() {
-            // Add subtle shadow pulse animation
-            this.style.animation = 'shadowPulse 1.5s infinite alternate';
-        });
+    // Monthly Calendar Implementation
+    class Calendar {
+        constructor() {
+            this.today = new Date();
+            this.currentMonth = this.today.getMonth();
+            this.currentYear = this.today.getFullYear();
+            this.monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            this.calendarDays = document.getElementById('calendarDays');
+            this.monthYearElement = document.querySelector('.calendar-month-year');
+            
+            // Activity data - this would come from your backend in reality
+            this.activityDates = [
+                new Date(2023, 7, 5), 
+                new Date(2023, 7, 10), 
+                new Date(2023, 7, 15),
+                new Date(2023, 7, 20),
+                new Date(2023, 7, 25)
+            ];
+            
+            // Set up event listeners
+            document.querySelector('.prev-month').addEventListener('click', () => this.previousMonth());
+            document.querySelector('.next-month').addEventListener('click', () => this.nextMonth());
+            
+            // Initialize calendar
+            this.showCalendar(this.currentMonth, this.currentYear);
+        }
         
-        card.addEventListener('mouseout', function() {
-            this.style.animation = '';
-        });
-    });
-    
-    // Define the shadow pulse animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes shadowPulse {
-            0% {
-                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+        showCalendar(month, year) {
+            // Clear previous calendar
+            this.calendarDays.innerHTML = '';
+            
+            // Update month and year display
+            this.monthYearElement.textContent = `${this.monthNames[month]} ${year}`;
+            
+            // Get first day of month
+            const firstDay = new Date(year, month, 1).getDay();
+            
+            // Get number of days in month
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Get days from previous month
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            
+            // Add days from previous month
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('calendar-day', 'other-month');
+                dayElement.textContent = daysInPrevMonth - i;
+                this.calendarDays.appendChild(dayElement);
             }
-            100% {
-                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            
+            // Add days for current month
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('calendar-day');
+                dayElement.textContent = i;
+                
+                // Check if day has activity
+                const currentDate = new Date(year, month, i);
+                if (this.hasActivity(currentDate)) {
+                    dayElement.classList.add('has-activity');
+                }
+                
+                // Check if day is today
+                if (this.isToday(i)) {
+                    dayElement.classList.add('today');
+                }
+                
+                this.calendarDays.appendChild(dayElement);
+            }
+            
+            // Fill in remaining days from next month
+            const totalDaysDisplayed = this.calendarDays.children.length;
+            const remainingCells = 42 - totalDaysDisplayed; // 6 rows x 7 days = 42
+            
+            for (let i = 1; i <= remainingCells; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('calendar-day', 'other-month');
+                dayElement.textContent = i;
+                this.calendarDays.appendChild(dayElement);
             }
         }
-    `;
-    document.head.appendChild(style);
+        
+        isToday(day) {
+            return this.currentMonth === this.today.getMonth() && 
+                   this.currentYear === this.today.getFullYear() && 
+                   day === this.today.getDate();
+        }
+        
+        hasActivity(date) {
+            return this.activityDates.some(activity => 
+                activity.getDate() === date.getDate() && 
+                activity.getMonth() === date.getMonth() && 
+                activity.getFullYear() === date.getFullYear()
+            );
+        }
+        
+        previousMonth() {
+            if (this.currentMonth === 0) {
+                this.currentYear--;
+                this.currentMonth = 11;
+            } else {
+                this.currentMonth--;
+            }
+            this.showCalendar(this.currentMonth, this.currentYear);
+        }
+        
+        nextMonth() {
+            if (this.currentMonth === 11) {
+                this.currentYear++;
+                this.currentMonth = 0;
+            } else {
+                this.currentMonth++;
+            }
+            this.showCalendar(this.currentMonth, this.currentYear);
+        }
+    }
+    
+    // Initialize calendar
+    new Calendar();
 });
 </script>
 {% endblock %} 

@@ -7,6 +7,8 @@
     {% block styles %}
     <!-- Main CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/admin.css') }}">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -23,7 +25,7 @@
             width: 100%;
             max-width: 100%;
             overflow-x: hidden;
-            background-color: #e7ecf0;
+            background-color: #f8f1e4; /* Updated to beige background */
         }
         .admin-layout {
             width: 100vw;
@@ -32,7 +34,7 @@
             padding: 0;
             display: flex;
             overflow-x: hidden;
-            background-color: #e7ecf0;
+            background-color: #f8f1e4; /* Updated to beige background */
             min-height: 100vh;
         }
         .admin-main {
@@ -40,24 +42,82 @@
             max-width: calc(100vw - 256px - 40px);
             margin-left: calc(256px + 20px);
             overflow-x: hidden;
-            background-color: #e7ecf0;
+            background-color: #f8f1e4; /* Updated to beige background */
             min-height: 100vh;
+            padding-bottom: 30px; /* Add padding at the bottom */
         }
         .admin-sidebar.collapsed + .admin-main {
             width: calc(100vw - 80px - 40px);
             max-width: calc(100vw - 80px - 40px);
             margin-left: calc(80px + 20px);
         }
+        
+        /* Sidebar styling */
+        .admin-sidebar {
+            background-color: #004225; /* Dark green */
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+        }
+        
+        .nav-link {
+            border-radius: 12px;
+            margin: 0 10px;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-link i {
+            font-size: 18px;
+        }
+        
+        /* Mobile toggle button */
+        .admin-mobile-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #004225;
+            color: white;
+            border: none;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        
         @media (max-width: 768px) {
             .admin-main {
                 width: 100vw;
                 max-width: 100vw;
                 margin-left: 0;
+                padding-top: 60px; /* Add space for the mobile toggle */
             }
             .admin-sidebar.collapsed + .admin-main {
                 width: 100vw;
                 max-width: 100vw;
                 margin-left: 0;
+            }
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                border-radius: 0;
+            }
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+            .admin-mobile-toggle {
+                display: flex;
             }
         }
     </style>
@@ -96,6 +156,10 @@
             </nav>
             
             <div class="admin-sidebar-footer">
+                <a href="{{ url_for('main.index') }}" class="nav-link">
+                    <i class="bi bi-eye"></i>
+                    <span>View Site</span>
+                </a>
                 <a href="{{ url_for('auth.logout') }}" class="nav-link">
                     <i class="bi bi-box-arrow-left"></i>
                     <span>Sign Out</span>

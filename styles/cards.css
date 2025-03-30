@@ -1,0 +1,63 @@
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: none;
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+  background: #faf7f5; /* Soft beige background like in the image */
+}
+
+/* Progress circle styling */
+.progress-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #82c091 82%, /* Green progress color */
+    #e9ecef 0    /* Gray background */
+  );
+  position: relative;
+}
+
+/* Calendar card specific styles */
+.calendar-card {
+  min-height: 280px;
+}
+
+/* Tag/pill styling */
+.tag {
+  background: #f5f5f5;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #666;
+  display: inline-block;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.tag.active {
+  background: #82c091; /* Green background for active tags */
+  color: white;
+}
+
+/* Chart styling */
+.chart-container {
+  height: 200px;
+  margin-top: 16px;
+}
+
+.chart-bar {
+  background: #e9ecef;
+  border-radius: 4px;
+}
+
+.chart-bar.active {
+  background: #82c091; /* Green for active bars */
+} 

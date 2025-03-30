@@ -19,7 +19,22 @@
   --color-info: #0dcaf0;
   --color-light: var(--color-grey-200);
   --color-dark: #333333;
-  --color-background: var(--color-grey-100);
+  
+  /* New soft colors from the reference image */
+  --color-beige: #f8f1e4;
+  --color-green-soft: #e8f5e3;
+  --color-orange-soft: #fde1ce; 
+  --color-watermelon: #ff8a65;
+  --color-green-accent: #76b669;
+  
+  /* Card color backgrounds */
+  --color-card-green: #e8f5e3;
+  --color-card-blue: #e3eefc;
+  --color-card-orange: #fff1e3;
+  --color-card-purple: #f2e6ff;
+  
+  /* Standard UI colors */
+  --color-background: var(--color-beige);
   --color-text: var(--color-grey-700);
   --color-text-secondary: #666666;
   --color-heading: var(--color-grey-800);
@@ -27,8 +42,22 @@
   --color-border-light: var(--color-grey-200);
   --color-card-bg: white;
   
+  /* Grey scale */
+  --color-grey-100: #f8f9fa;
+  --color-grey-200: #e9ecef;
+  --color-grey-300: #dee2e6;
+  --color-grey-400: #ced4da;
+  --color-grey-500: #adb5bd;
+  --color-grey-600: #6c757d;
+  --color-grey-700: #495057;
+  --color-grey-800: #343a40;
+  --color-grey-900: #212529;
+  
+  /* RGB values for opacity adjustments */
   --color-primary-rgb: 0, 66, 37;
   --color-secondary-rgb: 100, 116, 139;
+  --color-green-accent-rgb: 118, 182, 105;
+  --color-watermelon-rgb: 255, 138, 101;
   
   /* Typography */
   --font-family-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -53,6 +82,7 @@
   --border-radius-sm: 4px;
   --border-radius: 8px;
   --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
   
   /* Transitions */
   --transition-base: all 0.2s ease;

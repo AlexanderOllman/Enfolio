@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-container">
+    <h1 class="section-title">Card Style Examples</h1>
+    
+    <div class="grid grid-3">
+        <!-- Weekly Progress Card -->
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="progress-circle">
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                        <circle class="progress-circle-bg" cx="60" cy="60" r="54" />
+                        <circle class="progress-circle-fill" cx="60" cy="60" r="54" 
+                               stroke-dasharray="339.292" 
+                               stroke-dashoffset="61.0725" /> <!-- 339.292 * (1 - 0.82) -->
+                    </svg>
+                    <div class="progress-percent">82%</div>
+                </div>
+                <h3 class="card-title mt-4">Weekly progress</h3>
+                <p class="card-text">4/5 tasks done.</p>
+            </div>
+        </div>
+        
+        <!-- Sales Marketing Workshop Card -->
+        <div class="card card-bg-green">
+            <div class="card-body">
+                <div class="card-tag">#Business</div>
+                <div style="position: relative; height: 120px; margin-bottom: var(--spacing-3);">
+                    <!-- 3D Elements - using divs as placeholders -->
+                    <div class="card-decorative-item" style="position: absolute; top: 10px; left: 40%; background-color: var(--color-watermelon); width: 60px; height: 60px; border-radius: 50%;"></div>
+                    <div class="card-decorative-item" style="position: absolute; top: 40px; left: 20%; background-color: #fff; width: 40px; height: 40px; border-radius: 6px; transform: rotate(15deg); box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
+                    <div class="card-decorative-item" style="position: absolute; top: 60px; right: 30%; background: radial-gradient(circle at 30% 30%, #4d9b4d, #175d17); width: 50px; height: 50px; border-radius: 50%; background-image: linear-gradient(45deg, #4d9b4d 25%, #175d17 25%, #175d17 50%, #4d9b4d 50%, #4d9b4d 75%, #175d17 75%, #175d17); background-size: 10px 10px;"></div>
+                </div>
+                <h3 class="card-title">Sales Marketing Workshop</h3>
+                <div class="card-footer">
+                    <div class="d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; background-color: #000; color: #fff; border-radius: 50%; font-size: 14px;">?</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Hours Card -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Total Hours</h3>
+                    <div class="text-right">
+                        <span style="font-size: 24px; font-weight: 600;">7</span>
+                        <span style="font-size: 16px;">h</span>
+                        <span style="font-size: 24px; font-weight: 600; margin-left: 4px;">48</span>
+                        <span style="font-size: 16px;">min</span>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center justify-content-between" style="margin: var(--spacing-3) 0 var(--spacing-1) 0;">
+                    <div style="font-size: var(--font-size-xs);">8h</div>
+                    <div></div>
+                </div>
+                
+                <div class="bar-chart" style="height: 120px;">
+                    <div class="bar-chart-bar" style="height: 30%;">
+                        <div class="bar-chart-label">Mon</div>
+                    </div>
+                    <div class="bar-chart-bar" style="height: 50%;">
+                        <div class="bar-chart-label">Tue</div>
+                    </div>
+                    <div class="bar-chart-bar active" style="height: 80%;">
+                        <div class="bar-chart-label">Wed</div>
+                    </div>
+                    <div class="bar-chart-bar" style="height: 60%;">
+                        <div class="bar-chart-label">Thu</div>
+                    </div>
+                    <div class="bar-chart-bar" style="height: 40%;">
+                        <div class="bar-chart-label">Fri</div>
+                    </div>
+                    <div class="bar-chart-bar" style="height: 65%;">
+                        <div class="bar-chart-label">Sat</div>
+                    </div>
+                    <div class="bar-chart-bar" style="height: 55%;">
+                        <div class="bar-chart-label">Sun</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-2" style="margin-top: var(--spacing-5);">
+        <!-- Webinars Card -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Webinars</h3>
+                    <div>124 webinars</div>
+                </div>
+                
+                <div class="grid grid-3" style="margin-top: var(--spacing-4);">
+                    <!-- Color Theory Webinar -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div style="margin-bottom: var(--spacing-3);">
+                                <div style="width: 32px; height: 32px; background-color: #FF9F5B; border-radius: 50%;"></div>
+                            </div>
+                            <h4 class="card-title">Color Theory</h4>
+                            <div class="d-flex justify-content-between" style="margin-top: var(--spacing-2);">
+                                <div style="font-size: var(--font-size-xs); color: var(--color-grey-600);">3 Sep</div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-grey-600);">6pm</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Double Diamond Webinar -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div style="margin-bottom: var(--spacing-3);">
+                                <div style="width: 32px; height: 32px; background-color: var(--color-green-soft); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <div style="width: 16px; height: 16px; background-color: #4CAF50; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
+                                </div>
+                            </div>
+                            <h4 class="card-title">Double Diamond</h4>
+                            <div class="d-flex justify-content-between" style="margin-top: var(--spacing-2);">
+                                <div style="font-size: var(--font-size-xs); color: var(--color-grey-600);">3 Sep</div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-grey-600);">8pm</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Architecture Webinar -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div style="margin-bottom: var(--spacing-3);">
+                                <div style="width: 32px; height: 32px; background-color: var(--color-card-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <div style="width: 16px; height: 16px; background-color: #2196F3; border-radius: 50%;"></div>
+                                </div>
+                            </div>
+                            <h4 class="card-title">Architecture</h4>
+                            <div class="d-flex justify-content-between" style="margin-top: var(--spacing-2);">
+                                <div style="font-size: var(--font-size-xs); color: var(--color-grey-600);">1 Sep</div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-grey-600);">7pm</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: var(--spacing-4); display: flex; flex-wrap: wrap; gap: var(--spacing-2);">
+                    <div class="card-tag" style="background-color: var(--color-grey-200); color: var(--color-grey-700);">Skill-Based</div>
+                    <div class="card-tag" style="background-color: var(--color-grey-200); color: var(--color-grey-700);">Business</div>
+                    <div class="card-tag" style="background-color: var(--color-grey-200); color: var(--color-grey-700);">Marketing</div>
+                    <div class="card-tag" style="background-color: rgba(0,0,0,0.8); color: white;">Flexibility</div>
+                    <div class="card-tag" style="background-color: var(--color-grey-200); color: var(--color-grey-700);">Coordination</div>
+                    <div class="card-tag" style="background-color: var(--color-green-soft); color: var(--color-green-accent);">Balance</div>
+                    <div class="card-tag" style="background-color: var(--color-grey-200); color: var(--color-grey-700);">Power</div>
+                    <div class="card-tag" style="background-color: var(--color-grey-200); color: var(--color-grey-700);">Design</div>
+                    <div class="card-tag" style="background-color: var(--color-grey-200); color: var(--color-grey-700);">Endurance</div>
+                    <div class="card-tag" style="background-color: var(--color-grey-200); color: var(--color-grey-700);">Writing</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calendar Card -->
+        <div class="card">
+            <div class="card-body">
+                <div class="calendar-header">
+                    <h3 class="card-title">September 2022</h3>
+                    <div class="calendar-navigation">
+                        <button class="calendar-nav-btn">
+                            &lt;
+                        </button>
+                        <button class="calendar-nav-btn">
+                            &gt;
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid">
+                    <!-- Calendar header -->
+                    <div class="calendar-day-header">Sun</div>
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                    
+                    <!-- Calendar days -->
+                    <div class="calendar-day">2</div>
+                    <div class="calendar-day active">3</div>
+                    <div class="calendar-day">4</div>
+                    <div class="calendar-day">5</div>
+                    <div class="calendar-day">6</div>
+                    <div class="calendar-day">7</div>
+                    <div class="calendar-day">8</div>
+                </div>
+                
+                <div style="margin-top: var(--spacing-5);">
+                    <!-- Activity items -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-3); background-color: rgba(var(--color-primary-rgb), 0.05); padding: var(--spacing-2) var(--spacing-3); border-radius: var(--border-radius);">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 12px; height: 12px; background-color: #9c27b0; border-radius: 50%;"></div>
+                            <span>Music</span>
+                        </div>
+                        <div>
+                            <span style="color: var(--color-grey-600);">5 hours per day</span>
+                            <span style="margin-left: var(--spacing-3); font-weight: 600;">80%</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-3); background-color: rgba(var(--color-green-accent-rgb), 0.05); padding: var(--spacing-2) var(--spacing-3); border-radius: var(--border-radius);">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 12px; height: 12px; background-color: #4CAF50; border-radius: 50%;"></div>
+                            <span>Food</span>
+                        </div>
+                        <div>
+                            <span style="color: var(--color-grey-600);">5 hours per day</span>
+                            <span style="margin-left: var(--spacing-3); font-weight: 600;">65%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

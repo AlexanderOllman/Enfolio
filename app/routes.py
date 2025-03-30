@@ -604,3 +604,8 @@ def get_company_logo():
             'success': False,
             'error': str(e)
         }), 500
+
+@main.route('/card-examples')
+def card_examples():
+    """Display the card examples page with the new styling."""
+    return render_template('card_examples.html')
