@@ -25,8 +25,8 @@ def allowed_file(filename):
 
 @main.route('/')
 def index():
-    # Fetch all content items, ordered by date
-    content_items = Content.query.order_by(Content.date_created.desc()).all()
+    # Fetch only live content items, ordered by date
+    content_items = Content.query.filter_by(is_live=True).order_by(Content.date_created.desc()).all()
     
     # Pass content_items to the template
     return render_template('index.html', content_items=content_items)
@@ -43,16 +43,100 @@ def admin_home():
     all_content = Content.query.order_by(Content.date_created.desc()).all()
     recent_content = all_content[:5] if all_content else []
     
-    # Get all journal entries for the count
+    # Get counts for metrics cards
+    projects_count = Content.query.filter_by(type='project').count()
+    blog_count = Content.query.filter_by(type='blog').count()
+    experience_count = Content.query.filter_by(type='experience').count()
+    
+    # Get all journal entries
     all_journal_entries = Journal.query.all()
+    
     # Get 5 most recent journal entries for display
     recent_journal_entries = Journal.query.order_by(Journal.date_created.desc()).limit(5).all()
+    
+    # Get profile image if it exists (or use a default)
+    user_image = 'default-profile.jpg'  # Default image
+    # In the future, we could load the actual user's profile image
+    
+    # Define upcoming tasks - would come from a tasks table in a real implementation
+    upcoming_tasks = [
+        {
+            'name': 'Complete Portfolio Profile',
+            'date': 'Sep 13, 08:30',
+            'icon': 'chat',
+            'completed': True
+        },
+        {
+            'name': 'Setup Basic Portfolio',
+            'date': 'Sep 13, 10:30',
+            'icon': 'people',
+            'completed': True
+        },
+        {
+            'name': 'Add First Project',
+            'date': 'Sep 13, 13:00',
+            'icon': 'file-text',
+            'completed': False
+        },
+        {
+            'name': 'Write Bio',
+            'date': 'Sep 13, 14:45',
+            'icon': 'pen',
+            'completed': False
+        },
+        {
+            'name': 'Configure SEO Settings',
+            'date': 'Sep 13, 16:30',
+            'icon': 'gear',
+            'completed': False
+        }
+    ]
+    
+    # Define calendar events - would come from an events table in a real implementation
+    calendar_events = [
+        {
+            'title': 'Weekly Content Update',
+            'day': 24,
+            'type': 'work',
+            'attendees': 3
+        },
+        {
+            'title': 'Portfolio Review',
+            'day': 28,
+            'type': 'personal',
+            'attendees': 2
+        }
+    ]
+    
+    # Calculate progress percentages
+    content_completion = 75  # Example percentages
+    design_completion = 40
+    seo_completion = 60
+    overall_completion = 55
+    
+    # Calculate onboarding progress
+    completed_tasks = sum(1 for task in upcoming_tasks if task['completed'])
+    total_tasks = len(upcoming_tasks)
+    onboarding_percentage = int((completed_tasks / total_tasks) * 100) if total_tasks > 0 else 0
     
     return render_template('admin/home.html', 
                          content=all_content, 
                          recent_content=recent_content,
-                         journal_entries=all_journal_entries,  # For the count
-                         recent_journal_entries=recent_journal_entries)  # For the display
+                         journal_entries=all_journal_entries,
+                         recent_journal_entries=recent_journal_entries,
+                         projects_count=projects_count,
+                         blog_count=blog_count,
+                         experience_count=experience_count,
+                         user_image=user_image,
+                         upcoming_tasks=upcoming_tasks,
+                         calendar_events=calendar_events,
+                         content_completion=content_completion,
+                         design_completion=design_completion,
+                         seo_completion=seo_completion,
+                         overall_completion=overall_completion,
+                         onboarding_percentage=onboarding_percentage,
+                         completed_tasks=completed_tasks,
+                         total_tasks=total_tasks)
 
 @main.route('/admin/projects')
 @login_required
@@ -261,55 +345,97 @@ def create_new():
 
     return render_template('admin/content_form.html', form=form, content=None)
 
-@main.route('/content/<string:id>/edit', methods=['GET', 'POST'])
+@main.route('/admin/<string:type>/edit/<string:id>', methods=['GET', 'POST'])
 @login_required
-def edit_content(id):
+def edit_content_by_type(type, id):
+    # Get the existing content
     content = Content.query.get_or_404(id)
+
     form = FlaskForm()
-    
-    if request.method == 'POST' and form.validate_on_submit():
-        try:
-            content.title = request.form.get('title')
-            content.description = request.form.get('description')
-            content.page_content = json.loads(request.form.get('page_content', '[]'))
-            
-            # Handle image upload if provided
-            if 'image' in request.files:
-                file = request.files['image']
-                if file and file.filename and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    file.save(os.path.join(UPLOAD_FOLDER, filename))
-                    content.image_url = filename
 
-            # Update type-specific fields
-            if content.type == 'project':
-                content.technologies = request.form.get('technologies')
-                content.github_url = request.form.get('github_url')
-                content.live_url = request.form.get('live_url')
-            elif content.type == 'experience':
-                content.company = request.form.get('company')
-                content.position = request.form.get('position')
-                content.start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date() if request.form.get('start_date') else None
-                content.end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date() if request.form.get('end_date') else None
-                
-                # Add new experience fields
-                content.employment_type = request.form.get('employment_type')
-                content.location = request.form.get('location')
-                content.is_remote = True if request.form.get('is_remote') else False
-                content.team_size = request.form.get('team_size')
-                content.key_achievements = request.form.get('key_achievements')
-                content.skills = request.form.get('skills')
-                content.responsibilities = request.form.get('responsibilities')
-            elif content.type == 'blog':
-                content.content = request.form.get('content')
-
-            db.session.commit()
-            flash(f'{content.type.title()} updated successfully!', 'success')
-            return redirect(url_for(f'main.admin_{content.type}s'))
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error updating content: {str(e)}', 'error')
+    if form.validate_on_submit():
+        # Update common fields
+        content.title = form.title.data
+        content.description = form.description.data
+        content.type = type
+        
+        # Process image upload
+        if form.image.data:
+            image_filename = secure_filename(form.image.data.filename)
+            if image_filename:
+                form.image.data.save(os.path.join(current_app.config['UPLOAD_FOLDER'], image_filename))
+                content.image_url = image_filename
+        
+        # Process screenshots uploads
+        if request.form.getlist('screenshots'):
+            screenshots = request.form.getlist('screenshots')
+            content.screenshots = screenshots
+        
+        # Process content type-specific fields
+        if type == 'project':
+            content.github_url = form.github_url.data
+            content.live_url = form.project_url.data
+            content.technologies = form.tech_stack.data
+            content.project_status = form.project_status.data
+            content.project_client = form.project_client.data
+        elif type == 'experience':
+            content.company = form.company.data
+            content.position = form.position.data
+            content.location = form.location.data
+            content.employment_type = form.employment_type.data
+            content.is_remote = form.is_remote.data
+            content.start_date = form.start_date.data
+            content.end_date = form.end_date.data
+            content.key_achievements = form.key_achievements.data
+            content.responsibilities = form.responsibilities.data
+            content.skills = form.skills.data
+            content.team_size = form.team_size.data
+        elif type == 'blog':
+            content.content = form.blog_content.data
+            content.status = form.status.data
+            content.tags = form.tags.data
+            content.read_time = form.read_time.data
+        
+        # Update page content if provided
+        if form.page_content.data:
+            try:
+                page_content = json.loads(form.page_content.data)
+                content.page_content = page_content
+            except Exception as e:
+                flash(f'Error parsing page content: {str(e)}', 'danger')
+        
+        db.session.commit()
+        flash(f'{type.capitalize()} updated successfully!', 'success')
+        return redirect(url_for(f'main.admin_{type}s'))
     
+    # Fill the form with existing data
+    form.title.data = content.title
+    form.description.data = content.description
+    
+    if type == 'project':
+        form.github_url.data = content.github_url
+        form.project_url.data = content.live_url
+        form.tech_stack.data = content.technologies
+        form.project_status.data = content.project_status
+        form.project_client.data = content.project_client
+    elif type == 'experience':
+        form.company.data = content.company
+        form.position.data = content.position
+        form.location.data = content.location
+        form.employment_type.data = content.employment_type
+        form.is_remote.data = content.is_remote
+        form.start_date.data = content.start_date
+        form.end_date.data = content.end_date
+        form.key_achievements.data = content.key_achievements
+        form.responsibilities.data = content.responsibilities
+        form.skills.data = content.skills
+        form.team_size.data = content.team_size
+    elif type == 'blog':
+        form.blog_content.data = content.content
+        form.status.data = content.status
+        form.tags.data = content.tags
+        form.read_time.data = content.read_time
+
     return render_template('admin/content_form.html', form=form, content=content)
 
 @main.route('/content/<string:id>/delete', methods=['POST'])
@@ -332,32 +458,129 @@ def preview_project(id):
     project = Content.query.get_or_404(id)
     if project.type != 'project':
         abort(404)
-    return render_template('preview/project.html', project=project)
+    
+    # Render the frontend project template instead of the admin details template
+    return render_template('preview/project.html', project=project, title=project.title)
+
+@main.route('/project/<string:id>')
+def view_project(id):
+    project = Content.query.get_or_404(id)
+    if project.type != 'project':
+        abort(404)
+    
+    # Find related projects based on technologies
+    related_content = []
+    if project.technologies:
+        tech_list = [tech.strip() for tech in project.technologies.split(',')]
+        # Find projects with similar technologies
+        related_projects = Content.query.filter(
+            Content.type == 'project',
+            Content.id != project.id
+        ).all()
+        
+        # Score projects by number of matching technologies
+        scored_projects = []
+        for related in related_projects:
+            if related.technologies:
+                related_techs = [t.strip() for t in related.technologies.split(',')]
+                matching = len(set(tech_list) & set(related_techs))
+                if matching > 0:
+                    scored_projects.append((related, matching))
+        
+        # Sort by score and take top 3
+        scored_projects.sort(key=lambda x: x[1], reverse=True)
+        related_content = [p[0] for p in scored_projects[:3]]
+    
+    # Get CSRF token from session
+    csrf_token = session.get('csrf_token', '')
+    
+    return render_template('details.html', content=project, related_content=related_content, csrf_token=csrf_token)
 
 @main.route('/preview/experience/<string:id>')
 def preview_experience(id):
     experience = Content.query.get_or_404(id)
     if experience.type != 'experience':
         abort(404)
-    return render_template('preview/experience.html', experience=experience)
+    
+    # Render the frontend experience template
+    return render_template('preview/experience.html', experience=experience, title=experience.title)
+
+@main.route('/experience/<string:id>')
+def view_experience(id):
+    experience = Content.query.get_or_404(id)
+    if experience.type != 'experience':
+        abort(404)
+    
+    # Find related experiences based on skills
+    related_content = []
+    if experience.skills:
+        skill_list = [skill.strip() for skill in experience.skills.split(',')]
+        # Find experiences with similar skills
+        related_experiences = Content.query.filter(
+            Content.type == 'experience',
+            Content.id != experience.id
+        ).all()
+        
+        # Score experiences by number of matching skills
+        scored_experiences = []
+        for related in related_experiences:
+            if related.skills:
+                related_skills = [s.strip() for s in related.skills.split(',')]
+                matching = len(set(skill_list) & set(related_skills))
+                if matching > 0:
+                    scored_experiences.append((related, matching))
+        
+        # Sort by score and take top 3
+        scored_experiences.sort(key=lambda x: x[1], reverse=True)
+        related_content = [e[0] for e in scored_experiences[:3]]
+    
+    # Get CSRF token from session
+    csrf_token = session.get('csrf_token', '')
+    
+    return render_template('details.html', content=experience, related_content=related_content, csrf_token=csrf_token)
 
 @main.route('/preview/blog/<string:id>')
 def preview_blog(id):
-    post = Content.query.get_or_404(id)
-    if post.type != 'blog':
+    blog = Content.query.get_or_404(id)
+    if blog.type != 'blog':
         abort(404)
-    return render_template('preview/blog.html', post=post)
-
-@main.route('/edit/<string:type>/<string:id>', methods=['GET', 'POST'])
-@login_required
-def edit_content_by_type(type, id):
-    content = Content.query.filter_by(type=type, id=id).first_or_404()
     
-    if request.method == 'POST':
-        # Handle the form submission using the existing edit_content logic
-        return redirect(url_for(f'main.admin_{type}s'))
+    # Render the frontend blog template
+    return render_template('preview/blog.html', blog=blog, title=blog.title)
 
-    return render_template('admin/edit_content.html', content=content, type=type)
+@main.route('/blog/<string:id>')
+def view_blog(id):
+    blog = Content.query.get_or_404(id)
+    if blog.type != 'blog':
+        abort(404)
+    
+    # Find related blog posts based on tags
+    related_content = []
+    if blog.tags:
+        tag_list = [tag.strip() for tag in blog.tags.split(',')]
+        # Find blogs with similar tags
+        related_blogs = Content.query.filter(
+            Content.type == 'blog',
+            Content.id != blog.id
+        ).all()
+        
+        # Score blogs by number of matching tags
+        scored_blogs = []
+        for related in related_blogs:
+            if related.tags:
+                related_tags = [t.strip() for t in related.tags.split(',')]
+                matching = len(set(tag_list) & set(related_tags))
+                if matching > 0:
+                    scored_blogs.append((related, matching))
+        
+        # Sort by score and take top 3
+        scored_blogs.sort(key=lambda x: x[1], reverse=True)
+        related_content = [b[0] for b in scored_blogs[:3]]
+    
+    # Get CSRF token from session
+    csrf_token = session.get('csrf_token', '')
+    
+    return render_template('details.html', content=blog, related_content=related_content, csrf_token=csrf_token)
 
 @main.route('/admin/create', methods=['POST'])
 def create_content():
@@ -609,3 +832,38 @@ def get_company_logo():
 def card_examples():
     """Display the card examples page with the new styling."""
     return render_template('card_examples.html')
+
+@main.route('/api/content/toggle-live', methods=['POST'])
+@login_required
+@csrf.exempt  # Exempt this route from CSRF protection
+def toggle_content_live():
+    """API endpoint to toggle the 'is_live' status of a content item"""
+    try:
+        data = request.get_json()
+        if not data or 'id' not in data or 'is_live' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'Missing required fields'
+            }), 400
+        
+        content_id = data.get('id')
+        is_live = data.get('is_live')
+        
+        # Find the content
+        content = Content.query.get_or_404(content_id)
+        
+        # Update the is_live status
+        content.is_live = bool(is_live)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'is_live': content.is_live
+        })
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

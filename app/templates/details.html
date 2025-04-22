@@ -1,0 +1,1469 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ content.title }} | Enfolio Admin{% endblock %}
+
+{% block head_extras %}
+{% endblock %}
+
+{% block content %}
+<div class="admin-content-container">
+    {% if is_preview %}
+    <div class="preview-alert">
+        <div class="preview-alert-message">
+            <i class="bi bi-eye"></i>
+            <span>Preview Mode</span> - This is a preview of the admin view
+        </div>
+        <div class="preview-alert-actions">
+            <a href="{{ url_for('main.edit_content_by_type', type=content.type, id=content.id) }}" class="preview-edit-btn">
+                <i class="bi bi-pencil"></i>
+                <span>Edit</span>
+            </a>
+            <a href="{{ url_for('main.preview_' + content.type, id=content.id) }}" class="preview-frontend-btn" target="_blank">
+                <i class="bi bi-box-arrow-up-right"></i>
+                <span>Frontend View</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="details-header">
+        <div class="details-header-content">
+            {% if content.image_url %}
+            <div class="details-header-icon">
+                <img src="{% if content.image_url.startswith('http') %}{{ content.image_url }}{% else %}{{ url_for('static', filename='uploads/' + content.image_url) }}{% endif %}" 
+                     alt="{{ content.title }}" 
+                     class="details-icon-image">
+            </div>
+            {% endif %}
+            <div class="details-header-text">
+                <h1 class="details-title">{{ content.title }}</h1>
+                {% if content.type == 'experience' %}
+                <h2 class="details-subtitle">{{ content.company }}</h2>
+                {% endif %}
+                
+                <div class="details-meta">
+                    {% if content.type == 'project' %}
+                        {% if content.project_status %}
+                        <div class="meta-badge meta-badge-{% if content.project_status == 'Completed' %}success{% elif content.project_status == 'In Progress' %}warning{% else %}info{% endif %}">
+                            <i class="bi bi-bookmark"></i>
+                            <span>{{ content.project_status }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if content.technologies %}
+                        <div class="meta-badge">
+                            <i class="bi bi-code-slash"></i>
+                            <span>{{ content.technologies.split(',')|length }} Technologies</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if content.created_at %}
+                        <div class="meta-badge">
+                            <i class="bi bi-calendar"></i>
+                            <span>{{ content.created_at.strftime('%b %Y') }}</span>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if content.type == 'experience' %}
+                        <div class="meta-badge">
+                            <i class="bi bi-calendar-range"></i>
+                            <span>
+                                {{ content.start_date.strftime('%b %Y') if content.start_date else '' }} - 
+                                {% if content.end_date %}{{ content.end_date.strftime('%b %Y') }}{% else %}Present{% endif %}
+                            </span>
+                        </div>
+                        
+                        {% if content.location %}
+                        <div class="meta-badge">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>{{ content.location }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if content.employment_type %}
+                        <div class="meta-badge">
+                            <i class="bi bi-briefcase"></i>
+                            <span>{{ content.employment_type }}</span>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if content.type == 'blog' %}
+                        <div class="meta-badge">
+                            <i class="bi bi-calendar"></i>
+                            <span>{{ content.date_created.strftime('%b %d, %Y') if content.date_created else 'Not published' }}</span>
+                        </div>
+                        
+                        <div class="meta-badge meta-badge-{% if content.status == 'published' %}success{% else %}warning{% endif %}">
+                            <i class="bi bi-flag"></i>
+                            <span>{{ content.status|title if content.status else 'Draft' }}</span>
+                        </div>
+                        
+                        {% if content.read_time %}
+                        <div class="meta-badge">
+                            <i class="bi bi-clock"></i>
+                            <span>{{ content.read_time }} min read</span>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="details-actions">
+            <a href="{{ url_for('main.edit_content_by_type', type=content.type, id=content.id) }}" class="admin-btn admin-btn-primary">
+                <i class="bi bi-pencil-square"></i>
+                <span>Edit</span>
+            </a>
+            
+            <a href="{{ url_for('main.preview_' + content.type, id=content.id) }}" target="_blank" class="admin-btn admin-btn-secondary">
+                <i class="bi bi-eye"></i>
+                <span>Preview</span>
+            </a>
+            
+            <div class="admin-btn-group">
+                <label for="toggleLive" class="live-toggle-label">
+                    <span>Live</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="toggleLive" class="toggle-checkbox" 
+                               data-id="{{ content.id }}" 
+                               data-type="{{ content.type }}"
+                               {% if content.is_live %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+            
+            <a href="{{ url_for('main.admin_' + content.type + 's') }}" class="admin-btn admin-btn-subtle">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to {{ content.type|title }}s</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="details-layout">
+        <div class="details-main">
+            <!-- Description -->
+            <div class="details-section">
+                <h2 class="details-section-title">
+                    {% if content.type == 'project' %}About this Project{% elif content.type == 'experience' %}Overview{% else %}Description{% endif %}
+                </h2>
+                <div class="details-content rich-text">
+                    {{ content.description|safe }}
+                </div>
+            </div>
+            
+            <!-- Experience Responsibilities -->
+            {% if content.type == 'experience' and content.responsibilities %}
+            <div class="details-section">
+                <h2 class="details-section-title">Key Responsibilities</h2>
+                <div class="details-content rich-text">
+                    {{ content.responsibilities|safe }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Experience Achievements -->
+            {% if content.type == 'experience' and content.key_achievements %}
+            <div class="details-section">
+                <h2 class="details-section-title">Key Achievements</h2>
+                <div class="details-content achievement-list">
+                    <ul>
+                        {% for achievement in content.key_achievements.split('\n') %}
+                            {% if achievement.strip() %}
+                            <li>{{ achievement.strip() }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Blog Content -->
+            {% if content.type == 'blog' and content.content %}
+            <div class="details-section">
+                <h2 class="details-section-title">Content</h2>
+                <div class="details-content rich-text">
+                    {{ content.content|safe }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Page Content -->
+            {% if content.page_content %}
+            <div class="details-section">
+                <h2 class="details-section-title">Page Content</h2>
+                <div class="details-content page-content-preview">
+                    {% for element in content.page_content %}
+                        {% include 'components/_render_page_element.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="details-sidebar">
+            {% if content.type == 'project' and content.screenshots %}
+            <!-- Screenshots -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">
+                    <i class="bi bi-image"></i> Screenshots
+                </h3>
+                <div class="screenshots-gallery">
+                    {% for screenshot in content.screenshots %}
+                    <div class="screenshot-thumbnail" data-src="{% if screenshot.startswith('http') %}{{ screenshot }}{% else %}{{ url_for('static', filename='uploads/' + screenshot) }}{% endif %}">
+                        <img src="{% if screenshot.startswith('http') %}{{ screenshot }}{% else %}{{ url_for('static', filename='uploads/' + screenshot) }}{% endif %}" 
+                             alt="Screenshot {{ loop.index }}" 
+                             class="screenshot-img">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Timeline -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">
+                    <i class="bi bi-calendar-check"></i> Timeline
+                </h3>
+                <div class="timeline-container">
+                    {% if content.type == 'project' %}
+                        {% if content.created_at %}
+                        <div class="timeline-item">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-date">{{ content.created_at.strftime('%b %d, %Y') }}</div>
+                            <div class="timeline-content">
+                                <h4>Project Created</h4>
+                                <p>Initial project setup</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if content.modified_at and content.modified_at != content.created_at %}
+                        <div class="timeline-item">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-date">{{ content.modified_at.strftime('%b %d, %Y') }}</div>
+                            <div class="timeline-content">
+                                <h4>Last Updated</h4>
+                                <p>Project information updated</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% elif content.type == 'experience' %}
+                        {% if content.start_date %}
+                        <div class="timeline-item">
+                            <div class="timeline-point point-start"></div>
+                            <div class="timeline-date">{{ content.start_date.strftime('%b %Y') }}</div>
+                            <div class="timeline-content">
+                                <h4>Started</h4>
+                                <p>Began role at {{ content.company }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if content.end_date %}
+                        <div class="timeline-item">
+                            <div class="timeline-point point-end"></div>
+                            <div class="timeline-date">{{ content.end_date.strftime('%b %Y') }}</div>
+                            <div class="timeline-content">
+                                <h4>Ended</h4>
+                                <p>Completed role at {{ content.company }}</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="timeline-item">
+                            <div class="timeline-point point-current"></div>
+                            <div class="timeline-date">Present</div>
+                            <div class="timeline-content">
+                                <h4>Current Position</h4>
+                                <p>Currently working at {{ content.company }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% elif content.type == 'blog' %}
+                        {% if content.date_created %}
+                        <div class="timeline-item">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-date">{{ content.date_created.strftime('%b %d, %Y') }}</div>
+                            <div class="timeline-content">
+                                <h4>Published</h4>
+                                <p>Blog post created</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if content.modified_at and content.modified_at != content.date_created %}
+                        <div class="timeline-item">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-date">{{ content.modified_at.strftime('%b %d, %Y') }}</div>
+                            <div class="timeline-content">
+                                <h4>Updated</h4>
+                                <p>Content revised</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Meta Information -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">
+                    <i class="bi bi-info-circle"></i> Details
+                </h3>
+                
+                {% if content.type == 'project' %}
+                    <!-- Technologies -->
+                    {% if content.technologies %}
+                    <div class="sidebar-item">
+                        <div class="sidebar-item-title">Technologies</div>
+                        <div class="tag-cloud">
+                            {% for tech in content.technologies.split(',') %}
+                            <span class="tag-item">{{ tech.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Project Links -->
+                    {% if content.github_url or content.live_url %}
+                    <div class="sidebar-item">
+                        <div class="sidebar-item-title">Links</div>
+                        <div class="sidebar-links">
+                            {% if content.github_url %}
+                            <a href="{{ content.github_url }}" target="_blank" class="sidebar-link">
+                                <i class="bi bi-github"></i> GitHub Repository
+                            </a>
+                            {% endif %}
+                            
+                            {% if content.live_url %}
+                            <a href="{{ content.live_url }}" target="_blank" class="sidebar-link">
+                                <i class="bi bi-link-45deg"></i> Live Demo
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                
+                {% if content.type == 'experience' %}
+                    <!-- Skills -->
+                    {% if content.skills %}
+                    <div class="sidebar-item">
+                        <div class="sidebar-item-title">Skills</div>
+                        <div class="tag-cloud">
+                            {% for skill in content.skills.split(',') %}
+                            <span class="tag-item">{{ skill.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Company Info -->
+                    <div class="sidebar-item">
+                        <div class="sidebar-item-title">Company Details</div>
+                        <div class="company-info">
+                            <div class="company-info-item">
+                                <i class="bi bi-building"></i>
+                                <span>{{ content.company }}</span>
+                            </div>
+                            
+                            {% if content.location %}
+                            <div class="company-info-item">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>{{ content.location }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if content.employment_type %}
+                            <div class="company-info-item">
+                                <i class="bi bi-briefcase"></i>
+                                <span>{{ content.employment_type }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if content.is_remote %}
+                            <div class="company-info-item">
+                                <i class="bi bi-laptop"></i>
+                                <span>Remote Position</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if content.team_size %}
+                            <div class="company-info-item">
+                                <i class="bi bi-people"></i>
+                                <span>Team Size: {{ content.team_size }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if content.type == 'blog' %}
+                    <!-- Tags -->
+                    {% if content.tags %}
+                    <div class="sidebar-item">
+                        <div class="sidebar-item-title">Tags</div>
+                        <div class="tag-cloud">
+                            {% for tag in content.tags.split(',') %}
+                            <span class="tag-item">{{ tag.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Share Links -->
+                    <div class="sidebar-item">
+                        <div class="sidebar-item-title">Share</div>
+                        <div class="share-links">
+                            <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text={{ content.title }}" class="share-link" target="_blank">
+                                <i class="bi bi-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" class="share-link" target="_blank">
+                                <i class="bi bi-facebook"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url }}&title={{ content.title }}" class="share-link" target="_blank">
+                                <i class="bi bi-linkedin"></i>
+                            </a>
+                            <button class="share-link" onclick="copyToClipboard('{{ request.url }}')">
+                                <i class="bi bi-link-45deg"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+        
+    <!-- Related Content -->
+    {% if related_content %}
+    <div class="related-content-section">
+        <h2 class="related-content-title">
+            <i class="bi bi-link-45deg"></i> Related {{ content.type|title }}s
+        </h2>
+        
+        <div class="related-content-grid">
+            {% for item in related_content %}
+            <div class="related-card" data-href="{{ url_for('main.view_' + item.type, id=item.id) }}">
+                <div class="related-card-img">
+                    {% if item.image_url %}
+                    <img src="{% if item.image_url.startswith('http') %}{{ item.image_url }}{% else %}{{ url_for('static', filename='uploads/' + item.image_url) }}{% endif %}" 
+                         alt="{{ item.title }}">
+                    {% else %}
+                    <div class="related-card-placeholder">
+                        <i class="bi bi-{% if item.type == 'project' %}code-square{% elif item.type == 'experience' %}briefcase{% else %}file-text{% endif %}"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="related-card-content">
+                    <h3 class="related-card-title">{{ item.title }}</h3>
+                    
+                    <div class="related-card-meta">
+                        {% if item.type == 'project' and item.technologies %}
+                            {% set tech_list = item.technologies.split(',') %}
+                            {% for tech in tech_list[:2] %}
+                            <span class="related-tag">{{ tech.strip() }}</span>
+                            {% endfor %}
+                            {% if tech_list|length > 2 %}
+                            <span class="related-more">+{{ tech_list|length - 2 }}</span>
+                            {% endif %}
+                        {% elif item.type == 'experience' %}
+                            <span class="related-badge">
+                                {{ item.company }}
+                            </span>
+                        {% elif item.type == 'blog' and item.tags %}
+                            {% set tag_list = item.tags.split(',') %}
+                            {% for tag in tag_list[:2] %}
+                            <span class="related-tag">{{ tag.strip() }}</span>
+                            {% endfor %}
+                            {% if tag_list|length > 2 %}
+                            <span class="related-more">+{{ tag_list|length - 2 }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="related-card-actions">
+                    <a href="{{ url_for('main.view_' + item.type, id=item.id) }}" class="related-card-btn">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{{ url_for('main.edit_content_by_type', type=item.type, id=item.id) }}" class="related-card-btn">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Main Layout Styles */
+    .details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .details-header-content {
+        flex: 1;
+        display: flex;
+        align-items: flex-start;
+        gap: 2rem;
+    }
+    
+    .details-header-icon {
+        flex-shrink: 0;
+        width: 100px;
+        height: 100px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        background-color: var(--color-secondary-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .details-icon-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    .details-header-text {
+        flex: 1;
+    }
+    
+    .details-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--color-heading);
+    }
+    
+    .details-subtitle {
+        font-size: 1.5rem;
+        color: var(--color-secondary);
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+    
+    .details-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    
+    .meta-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: var(--color-secondary-light);
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: var(--color-secondary);
+    }
+    
+    .meta-badge i {
+        font-size: 1rem;
+    }
+    
+    .meta-badge-success {
+        background-color: var(--color-green-soft);
+        color: var(--color-success);
+    }
+    
+    .meta-badge-warning {
+        background-color: var(--color-orange-soft);
+        color: var(--color-warning);
+    }
+    
+    .meta-badge-info {
+        background-color: var(--color-blue-soft);
+        color: var(--color-info);
+    }
+    
+    .details-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+    
+    /* Grid Layout */
+    .details-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Main Content Area */
+    .details-main {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .details-image-container {
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .details-featured-image {
+        width: 100%;
+        display: block;
+        height: auto;
+        object-fit: cover;
+    }
+    
+    .details-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        padding: 2rem;
+    }
+    
+    .details-section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--color-heading);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--color-border-light);
+    }
+    
+    .details-content {
+        color: var(--color-text);
+        line-height: 1.7;
+    }
+    
+    .achievement-list ul {
+        padding-left: 1.5rem;
+        margin: 0;
+    }
+    
+    .achievement-list li {
+        margin-bottom: 0.75rem;
+        position: relative;
+    }
+    
+    .achievement-list li::before {
+        content: "•";
+        color: var(--color-primary);
+        font-weight: bold;
+        display: inline-block;
+        width: 1rem;
+        margin-left: -1rem;
+    }
+    
+    /* Sidebar */
+    .details-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .sidebar-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem;
+    }
+    
+    .sidebar-section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--color-heading);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .sidebar-section-title i {
+        color: var(--color-primary);
+    }
+    
+    .sidebar-item {
+        margin-bottom: 1.5rem;
+    }
+    
+    .sidebar-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .sidebar-item-title {
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--color-secondary);
+        font-size: 0.95rem;
+    }
+    
+    .tag-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .tag-item {
+        background-color: var(--color-secondary-light);
+        color: var(--color-secondary);
+        border-radius: 20px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+    
+    .tag-item:hover {
+        background-color: var(--color-primary-light);
+        color: var(--color-primary);
+    }
+    
+    .sidebar-links {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: var(--color-primary);
+        padding: 0.5rem 0;
+        transition: all 0.2s ease;
+    }
+    
+    .sidebar-link:hover {
+        color: var(--color-primary-hover);
+    }
+    
+    .company-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .company-info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--color-text);
+    }
+    
+    .company-info-item i {
+        color: var(--color-primary);
+    }
+    
+    .share-links {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .share-link {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: var(--color-secondary-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-secondary);
+        cursor: pointer;
+        border: none;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .share-link:hover {
+        background-color: var(--color-primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    /* Timeline Styling */
+    .timeline-container {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline-container::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: var(--color-secondary-light);
+        z-index: 1;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .timeline-point {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: var(--color-primary);
+        left: -2rem;
+        top: 0;
+        z-index: 2;
+        box-shadow: 0 0 0 4px white;
+    }
+    
+    .point-start {
+        background-color: var(--color-info);
+    }
+    
+    .point-end {
+        background-color: var(--color-secondary);
+    }
+    
+    .point-current {
+        background-color: var(--color-success);
+    }
+    
+    .timeline-date {
+        font-weight: 500;
+        color: var(--color-secondary);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .timeline-content {
+        background-color: var(--color-secondary-light);
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    
+    .timeline-content h4 {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+        color: var(--color-heading);
+    }
+    
+    .timeline-content p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--color-text);
+    }
+    
+    /* Related Content */
+    .related-content-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .related-content-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--color-heading);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .related-content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .related-card {
+        background-color: var(--color-card-bg);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
+    .related-card-img {
+        height: 140px;
+        overflow: hidden;
+    }
+    
+    .related-card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: all 0.5s ease;
+    }
+    
+    .related-card:hover .related-card-img img {
+        transform: scale(1.05);
+    }
+    
+    .related-card-placeholder {
+        width: 100%;
+        height: 100%;
+        background-color: var(--color-secondary-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--color-secondary);
+    }
+    
+    .related-card-content {
+        padding: 1rem;
+        flex: 1;
+    }
+    
+    .related-card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--color-heading);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .related-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .related-tag {
+        background-color: var(--color-secondary-light);
+        color: var(--color-secondary);
+        border-radius: 15px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .related-badge {
+        background-color: var(--color-primary-light);
+        color: var(--color-primary);
+        border-radius: 15px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .related-more {
+        font-size: 0.75rem;
+        color: var(--color-secondary);
+    }
+    
+    .related-card-actions {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: flex;
+        gap: 0.25rem;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
+    
+    .related-card:hover .related-card-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .related-card-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .related-card-btn:hover {
+        background-color: var(--color-primary);
+        color: white;
+    }
+    
+    /* Rich Text Styling */
+    .rich-text {
+        line-height: 1.7;
+    }
+    
+    .rich-text p:last-child {
+        margin-bottom: 0;
+    }
+    
+    .page-content-preview {
+        padding: 0;
+    }
+    
+    /* Preview Alert */
+    .preview-alert {
+        margin-bottom: 2rem;
+        padding: 1rem 1.5rem;
+        background-color: var(--color-info);
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.95rem;
+    }
+    
+    .preview-alert-message {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .preview-alert i {
+        font-size: 1.25rem;
+    }
+    
+    .preview-alert span {
+        font-weight: 600;
+    }
+    
+    .preview-alert-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .preview-edit-btn,
+    .preview-frontend-btn {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+    
+    .preview-edit-btn:hover,
+    .preview-frontend-btn:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .preview-frontend-btn {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .preview-frontend-btn:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+    }
+    
+    /* Screenshots Gallery */
+    .screenshots-gallery {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .screenshot-thumbnail {
+        width: 100%;
+        height: 85px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .screenshot-thumbnail:hover {
+        transform: scale(1.05);
+    }
+    
+    .screenshot-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .screenshots-modal .modal-body {
+        padding: 0;
+    }
+    
+    .screenshots-modal img {
+        width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+        .details-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .details-header-content {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .details-actions {
+            margin-top: 1.5rem;
+            width: 100%;
+            justify-content: flex-start;
+        }
+        
+        .related-content-grid {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .details-header {
+            padding: 1.5rem;
+        }
+        
+        .details-title {
+            font-size: 1.75rem;
+        }
+        
+        .details-section {
+            padding: 1.5rem;
+        }
+        
+        .details-meta {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .related-content-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .screenshots-gallery {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* Live Toggle Styles */
+    .live-toggle-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+    
+    .toggle-checkbox {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    .toggle-checkbox:checked + .toggle-slider {
+        background-color: var(--color-success);
+    }
+    
+    .toggle-checkbox:focus + .toggle-slider {
+        box-shadow: 0 0 1px var(--color-success);
+    }
+    
+    .toggle-checkbox:checked + .toggle-slider:before {
+        transform: translateX(20px);
+    }
+    
+    .admin-btn-group {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--color-secondary-light);
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    
+    .admin-btn-secondary {
+        background-color: var(--color-secondary-light);
+        color: var(--color-secondary);
+    }
+    
+    .admin-btn-secondary:hover {
+        background-color: var(--color-secondary);
+        color: white;
+    }
+</style>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            alert('Link copied to clipboard!');
+        })
+        .catch(err => {
+            console.error('Could not copy text: ', err);
+        });
+}
+
+// Initialize screenshot gallery
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up screenshot thumbnails to open in modal
+    const thumbnails = document.querySelectorAll('.screenshot-thumbnail');
+    thumbnails.forEach(thumbnail => {
+        thumbnail.addEventListener('click', function() {
+            const imgSrc = this.getAttribute('data-src');
+            openScreenshotModal(imgSrc);
+        });
+    });
+    
+    // Handle clicks on related cards
+    const relatedCards = document.querySelectorAll('.related-card');
+    relatedCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't navigate if clicking on an action button
+            if (!e.target.closest('.related-card-actions')) {
+                const href = this.getAttribute('data-href');
+                if (href) {
+                    window.location.href = href;
+                }
+            }
+        });
+    });
+});
+
+// Open screenshot in modal
+function openScreenshotModal(imgSrc) {
+    // Create modal element
+    const modal = document.createElement('div');
+    modal.className = 'modal fade screenshots-modal';
+    modal.setAttribute('tabindex', '-1');
+    
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Screenshot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="${imgSrc}" alt="Screenshot Preview">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add to document
+    document.body.appendChild(modal);
+    
+    // Initialize Bootstrap modal
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    // Clean up after closing
+    modal.addEventListener('hidden.bs.modal', function() {
+        document.body.removeChild(modal);
+    });
+}
+
+// Handle Live Toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const liveToggle = document.getElementById('toggleLive');
+    if (liveToggle) {
+        liveToggle.addEventListener('change', function() {
+            const contentId = this.dataset.id;
+            const contentType = this.dataset.type;
+            const isLive = this.checked;
+            
+            // Show loading status
+            const originalLabel = liveToggle.closest('.live-toggle-label').querySelector('span').textContent;
+            liveToggle.closest('.live-toggle-label').querySelector('span').textContent = 'Saving...';
+            liveToggle.disabled = true;
+            
+            // Send AJAX request to update live status
+            fetch('/api/content/toggle-live', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: contentId,
+                    type: contentType,
+                    is_live: isLive
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset the label and enable the toggle
+                liveToggle.closest('.live-toggle-label').querySelector('span').textContent = originalLabel;
+                liveToggle.disabled = false;
+                
+                if (data.success) {
+                    // Show success message
+                    const message = isLive ? 'Content is now live on the frontend!' : 'Content has been taken offline.';
+                    showNotification(message, 'success');
+                } else {
+                    // Show error message and reset toggle
+                    showNotification(data.error || 'Failed to update live status', 'error');
+                    liveToggle.checked = !isLive;
+                }
+            })
+            .catch(error => {
+                // Reset the label and enable the toggle
+                liveToggle.closest('.live-toggle-label').querySelector('span').textContent = originalLabel;
+                liveToggle.disabled = false;
+                
+                // Show error message and reset toggle
+                showNotification('An error occurred: ' + error, 'error');
+                liveToggle.checked = !isLive;
+            });
+        });
+    }
+});
+
+// Show notification function
+function showNotification(message, type = 'info') {
+    // Check if we have a notification container, create if not
+    let notificationContainer = document.getElementById('notification-container');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notification-container';
+        notificationContainer.style.position = 'fixed';
+        notificationContainer.style.top = '20px';
+        notificationContainer.style.right = '20px';
+        notificationContainer.style.zIndex = '9999';
+        document.body.appendChild(notificationContainer);
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+        <button class="notification-close">×</button>
+    `;
+    
+    // Style the notification
+    notification.style.backgroundColor = type === 'success' ? 'var(--color-success)' : 
+                                        type === 'error' ? 'var(--color-danger)' : 
+                                        'var(--color-info)';
+    notification.style.color = 'white';
+    notification.style.padding = '12px 16px';
+    notification.style.borderRadius = '8px';
+    notification.style.marginBottom = '10px';
+    notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    notification.style.display = 'flex';
+    notification.style.justifyContent = 'space-between';
+    notification.style.alignItems = 'center';
+    notification.style.minWidth = '300px';
+    notification.style.transform = 'translateX(120%)';
+    notification.style.transition = 'transform 0.3s ease';
+    
+    // Style notification content
+    notification.querySelector('.notification-content').style.display = 'flex';
+    notification.querySelector('.notification-content').style.alignItems = 'center';
+    notification.querySelector('.notification-content').style.gap = '8px';
+    
+    // Style close button
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.style.background = 'none';
+    closeBtn.style.border = 'none';
+    closeBtn.style.color = 'white';
+    closeBtn.style.fontSize = '20px';
+    closeBtn.style.cursor = 'pointer';
+    
+    // Add to container
+    notificationContainer.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Set up auto-dismiss
+    const dismissTimeout = setTimeout(() => {
+        dismissNotification(notification);
+    }, 5000);
+    
+    // Set up manual dismiss
+    closeBtn.addEventListener('click', () => {
+        clearTimeout(dismissTimeout);
+        dismissNotification(notification);
+    });
+}
+
+function dismissNotification(notification) {
+    notification.style.transform = 'translateX(120%)';
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 300);
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,56 @@
+{% if element.type == 'header' %}
+    <{{ element.heading_type|default('h2') }} class="content-header">
+        {{ element.content|safe }}
+    </{{ element.heading_type|default('h2') }}>
+{% elif element.type == 'text' %}
+    <div class="content-text">
+        {{ element.content|safe }}
+    </div>
+{% elif element.type == 'image' %}
+    <figure class="content-figure">
+        <img src="{% if element.image_url.startswith('http') %}{{ element.image_url }}{% else %}{{ url_for('static', filename='uploads/' + element.image_url) }}{% endif %}" 
+             alt="{{ element.content }}"
+             class="content-image">
+        {% if element.content %}
+            <figcaption class="content-caption">
+                {{ element.content }}
+            </figcaption>
+        {% endif %}
+    </figure>
+{% elif element.type == 'code' %}
+    <div class="content-code">
+        <pre><code class="{{ element.language|default('') }}">{{ element.content }}</code></pre>
+    </div>
+{% elif element.type == 'quote' %}
+    <blockquote class="content-quote">
+        <p>{{ element.content|safe }}</p>
+        {% if element.author %}
+            <cite>{{ element.author }}</cite>
+        {% endif %}
+    </blockquote>
+{% elif element.type == 'divider' %}
+    <hr class="content-divider">
+{% elif element.type == 'link' %}
+    <div class="content-link">
+        <a href="{{ element.url }}" class="card-btn card-btn-primary" {% if element.external %}target="_blank"{% endif %}>
+            {% if element.icon %}<i class="bi bi-{{ element.icon }}"></i>{% endif %}
+            {{ element.content }}
+        </a>
+    </div>
+{% elif element.type == 'list' %}
+    <div class="content-list">
+        {% if element.list_type == 'ordered' %}
+            <ol>
+                {% for item in element.items %}
+                    <li>{{ item|safe }}</li>
+                {% endfor %}
+            </ol>
+        {% else %}
+            <ul>
+                {% for item in element.items %}
+                    <li>{{ item|safe }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% endif %} 

@@ -39,20 +39,49 @@
     </div>
 
     {% if blog_posts %}
-    <div class="admin-grid admin-grid-2">
+    <div class="card-grid">
         {% for post in blog_posts %}
-        <div class="admin-card blog-card">
+        <div class="card blog-card clickable-card" onclick="viewBlogPost('{{ post.id }}')">
+            <div class="card-actions-dropdown">
+                <button type="button" class="card-actions-toggle" onclick="toggleActionsMenu(event, '{{ post.id }}')">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <div class="card-actions-menu" id="actions-menu-{{ post.id }}">
+                    <a href="{{ url_for('main.preview_blog', id=post.id) }}" 
+                       class="card-actions-item"
+                       target="_blank">
+                        <i class="bi bi-eye"></i>
+                        <span>Preview</span>
+                    </a>
+                    <a href="{{ url_for('main.edit_content_by_type', type='blog', id=post.id) }}" 
+                       class="card-actions-item">
+                        <i class="bi bi-pencil"></i>
+                        <span>Edit</span>
+                    </a>
+                    <div class="card-actions-divider"></div>
+                    <div class="card-actions-item text-danger" 
+                         onclick="deleteBlogPost('{{ post.id }}', event)">
+                        <i class="bi bi-trash"></i>
+                        <span>Delete</span>
+                    </div>
+                </div>
+            </div>
+            
             {% if post.image_url %}
             <img src="{{ post.image_url }}" 
                  alt="{{ post.title }}" 
-                 class="blog-card-image">
+                 class="card-image blog-card-image">
+            {% else %}
+            <div class="card-image-placeholder">
+                <i class="bi bi-file-text"></i>
+            </div>
             {% endif %}
             
             <div class="card-body">
                 <div class="blog-card-meta">
                     <i class="bi bi-calendar"></i>
                     <time datetime="{{ post.date_created.isoformat() }}">
-                        {{ post.date_created.strftime('%B %d, %Y') }}
+                        {{ post.date_created.strftime('%b %d, %Y') }}
                     </time>
                     {% if post.status %}
                     <span class="admin-badge admin-badge-{{ post.status }}">
@@ -70,26 +99,6 @@
                         <span class="blog-tag">{{ tag.strip() }}</span>
                         {% endfor %}
                     {% endif %}
-                </div>
-
-                <div class="admin-card-actions">
-                    <a href="{{ url_for('main.edit_content', id=post.id) }}" 
-                       class="admin-btn admin-btn-secondary">
-                        <i class="bi bi-pencil"></i>
-                        <span>Edit</span>
-                    </a>
-                    <button type="button" 
-                            class="admin-btn admin-btn-danger"
-                            onclick="deleteBlogPost('{{ post.id }}')">
-                        <i class="bi bi-trash"></i>
-                        <span>Delete</span>
-                    </button>
-                    <a href="{{ url_for('main.preview_blog', id=post.id) }}" 
-                       class="admin-btn admin-btn-primary"
-                       target="_blank">
-                        <i class="bi bi-eye"></i>
-                        <span>Preview</span>
-                    </a>
                 </div>
             </div>
         </div>
@@ -159,7 +168,10 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 <script>
-function deleteBlogPost(id) {
+function deleteBlogPost(id, event) {
+    if (event) {
+        event.stopPropagation();
+    }
     if (confirm('Are you sure you want to delete this blog post?')) {
         fetch(`/admin/content/${id}`, {
             method: 'DELETE',
@@ -174,10 +186,38 @@ function deleteBlogPost(id) {
     }
 }
 
+function toggleActionsMenu(event, postId) {
+    event.stopPropagation();
+    const menu = document.getElementById(`actions-menu-${postId}`);
+    
+    // Close all other open menus first
+    document.querySelectorAll('.card-actions-menu.show').forEach(openMenu => {
+        if (openMenu.id !== `actions-menu-${postId}`) {
+            openMenu.classList.remove('show');
+        }
+    });
+    
+    // Toggle the current menu
+    menu.classList.toggle('show');
+}
+
+function viewBlogPost(postId) {
+    window.location.href = `{{ url_for('main.view_blog', id='PLACEHOLDER_ID') }}`.replace('PLACEHOLDER_ID', postId);
+}
+
 function openTagManager() {
     // Implement tag management modal/functionality
     alert('Tag management functionality coming soon!');
 }
+
+// Close dropdown menus when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.card-actions-dropdown')) {
+        document.querySelectorAll('.card-actions-menu.show').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+});
 
 // Search functionality
 let searchTimeout;

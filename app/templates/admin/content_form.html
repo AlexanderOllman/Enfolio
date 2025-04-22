@@ -2,6 +2,69 @@
 
 {% block content %}
 <style>
+    /* Form actions */
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .form-actions button {
+        min-width: 120px;
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        gap: 8px;
+    }
+    
+    .form-actions .btn-primary {
+        background-color: #005f40;
+        border-color: #005f40;
+    }
+    
+    .form-actions .btn-primary:hover {
+        background-color: #004830;
+        border-color: #004830;
+    }
+    
+    .form-actions .btn-outline-secondary {
+        border-color: #ddd;
+        color: #555;
+    }
+    
+    .form-actions .btn-outline-secondary:hover {
+        background-color: #f5f5f5;
+        color: #333;
+    }
+    
+    /* Section spacing */
+    .form-section {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        display: none;
+    }
+    
+    .form-section.active {
+        display: block;
+    }
+    
+    .section-title {
+        margin-bottom: 1.5rem;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    /* Section description */
+    .section-description {
+        color: #666;
+        margin-bottom: 2rem;
+    }
+    
     /* Company search validation styling */
     .validation-message {
         font-size: 0.9rem;
@@ -73,7 +136,852 @@
         transform: scale(1.03);
         box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
+    
+    /* Form layout improvements */
+    .form-sections-grid {
+        display: flex;
+        flex-direction: column;
+        max-width: 800px;
+        margin: 0 auto;
+        background: #f9f9f9;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-column {
+        width: 100%;
+        margin-bottom: 0;
+        background: transparent;
+        padding: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 1rem;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    /* Section Headings */
+    .section-header {
+        color: #2c3e50;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .section-header.mt-4 {
+        margin-top: 2.5rem;
+    }
+    
+    /* Form inputs styling */
+    .form-control {
+        padding: 10px 12px;
+        height: auto;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .form-control:focus {
+        border-color: #005f40;
+        box-shadow: 0 0 0 0.2rem rgba(0, 95, 64, 0.1);
+    }
+    
+    .form-control::placeholder {
+        color: #aaa;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 6px;
+    }
+    
+    textarea.form-control {
+        min-height: 100px;
+    }
+    
+    select.form-control {
+        padding-right: 30px;
+        background: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23333' d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") no-repeat calc(100% - 12px) center/12px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    
+    /* Content type specific styles */
+    .content-type-fields {
+        display: none;
+        margin-bottom: 2rem;
+    }
+    
+    .content-type-fields h4:first-child {
+        margin-top: 0;
+    }
+    
+    /* Basic Info styling */
+    .basic-info-form {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .image-upload-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .image-preview {
+        width: 100%;
+        height: 250px;
+        border: 2px dashed #ddd;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        background: #f5f5f5;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .image-preview.active {
+        border: none;
+    }
+    
+    .image-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .image-preview .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #999;
+    }
+    
+    .image-preview .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 10px;
+    }
+    
+    .image-actions-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .image-actions-row button {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    /* Screenshots Grid */
+    .screenshots-container {
+        margin-top: 15px;
+    }
+    
+    .screenshots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .screenshot-item {
+        position: relative;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        height: 120px;
+    }
+    
+    .screenshot-preview {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .screenshot-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .screenshot-item:hover .screenshot-preview img {
+        transform: scale(1.05);
+    }
+    
+    .screenshot-actions {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    
+    .screenshot-item:hover .screenshot-actions {
+        opacity: 1;
+    }
+    
+    .screenshot-add-item {
+        border: 2px dashed #ddd;
+        border-radius: 6px;
+        height: 120px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .screenshot-add-item:hover {
+        background-color: #f8f9fa;
+        border-color: #005f40;
+    }
+    
+    .screenshot-add-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #888;
+    }
+    
+    .screenshot-add-btn i {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .screenshot-add-btn span {
+        font-size: 0.9rem;
+    }
+    
+    .screenshot-preview-modal .modal-body {
+        padding: 0;
+        text-align: center;
+    }
+    
+    .screenshot-preview-modal img {
+        max-width: 100%;
+        max-height: 80vh;
+    }
+    
+    /* Company search styling */
+    .company-search-container {
+        position: relative;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .company-search-results {
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        right: 0;
+        z-index: 1055; /* Increased z-index to avoid conflicts */
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        display: none;
+        max-height: 350px;
+        overflow-y: auto;
+        margin-top: 5px;
+        width: 100%;
+    }
+    
+    /* Ensure no content is covered by the dropdown */
+    .search-input-container {
+        position: relative;
+        z-index: 1051;
+        margin-bottom: 45px; /* Add space below for dropdown */
+    }
+    
+    /* For when the dropdown is visible, ensure content below stays below */
+    .search-input-container.has-dropdown-open {
+        margin-bottom: 350px;
+    }
+    
+    .company-result-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .company-result-item:hover {
+        background-color: #f0f7ff;
+    }
+    
+    .company-result-item.focused {
+        background-color: #e6f0ff;
+        outline: none;
+    }
+    
+    .company-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .company-result-logo {
+        width: 40px;
+        height: 40px;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+    
+    .company-logo-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .company-logo-placeholder i {
+        font-size: 1.2rem;
+        color: #aaa;
+    }
+    
+    .company-logo-placeholder.has-logo {
+        background-color: transparent;
+    }
+    
+    .company-logo-placeholder img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    .company-result-info {
+        flex: 1;
+    }
+    
+    .company-name {
+        font-weight: 500;
+        color: #333;
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+    }
+    
+    .company-domain {
+        font-size: 0.8rem;
+        color: #666;
+    }
+    
+    .no-results, .loading, .error {
+        padding: 15px;
+        text-align: center;
+        color: #666;
+    }
+    
+    /* Organization Form Styling */
+    .org-input-group {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .org-logo-preview {
+        flex: 0 0 120px;
+        height: 120px;
+        position: relative;
+        z-index: 1052; /* Higher than container but lower than dropdown */
+    }
+    
+    .logo-container {
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        border: 2px dashed #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #f8f9fa;
+        position: relative;
+    }
+    
+    .logo-container.has-logo {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .logo-container img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .logo-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #aaa;
+    }
+    
+    .logo-placeholder i {
+        font-size: 2.5rem;
+        margin-bottom: 8px;
+    }
+    
+    .org-details {
+        flex: 1;
+    }
+    
+    .search-input-container {
+        position: relative;
+    }
+    
+    .search-spinner {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        display: none;
+        z-index: 5;
+    }
+    
+    .search-input-container.searching .search-spinner {
+        display: block;
+    }
+    
+    .logo-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 8px;
+        position: relative;
+        z-index: 1052; /* Match the logo preview z-index */
+    }
+    
+    .logo-actions .btn {
+        padding: 0.3rem 0.7rem;
+        font-size: 0.85rem;
+    }
+    
+    .logo-container .remove-logo {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        background: rgba(220, 53, 69, 0.7);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+    
+    .logo-container .remove-logo:hover {
+        background: rgba(220, 53, 69, 1);
+    }
+    
+    .search-loading-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .spinner-container {
+        margin-bottom: 12px;
+    }
+    
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(0, 95, 64, 0.1);
+        border-radius: 50%;
+        border-top-color: #005f40;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    .loading-text {
+        color: #555;
+        font-size: 0.9rem;
+    }
+    
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    /* Company search styles */
+    .search-input-container {
+        position: relative;
+        margin-bottom: 10px;
+    }
+    
+    .search-icon {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        color: #aaa;
+        cursor: pointer;
+    }
+    
+    .company-search-results {
+        position: absolute;
+        top: calc(100% + 5px); /* Add a small gap between input and dropdown */
+        left: 0;
+        width: 100%;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+        z-index: 1100; /* Higher z-index */
+    }
+    
+    /* Fix for overlay issues */
+    .has-dropdown-open .company-search-results {
+        display: block;
+    }
+    
+    .has-dropdown-open + .logo-actions {
+        margin-top: 10px !important; /* Don't push down as dramatically */
+        transition: margin-top 0.3s ease;
+        position: relative;
+        z-index: 1000;
+    }
+    
+    .logo-actions {
+        position: relative;
+        z-index: 100;
+        margin-top: 1rem;
+        margin-bottom: 1.5rem;
+        transition: margin-top 0.3s ease;
+    }
+    
+    .search-spinner {
+        display: none;
+        margin: 10px auto;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .searching .search-spinner {
+        display: block;
+    }
+    
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0,0,0,0.1);
+        border-radius: 50%;
+        border-top-color: #007bff;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+        display: inline-block;
+        vertical-align: middle;
+        color: #666;
+    }
+    
+    .company-result-item {
+        display: flex;
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+    }
+    
+    .company-result-item:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .company-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .company-result-logo {
+        width: 40px;
+        height: 40px;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .company-logo-placeholder {
+        width: 40px;
+        height: 40px;
+        background-color: #f1f1f1;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #888;
+    }
+    
+    .company-logo-placeholder i {
+        font-size: 20px;
+    }
+    
+    .company-result-info {
+        flex: 1;
+    }
+    
+    .company-name {
+        font-weight: bold;
+        margin-bottom: 3px;
+    }
+    
+    .company-domain {
+        font-size: 12px;
+        color: #888;
+    }
+    
+    .no-results {
+        padding: 15px;
+        text-align: center;
+        color: #666;
+    }
+    
+    /* Uploaded logo styles */
+    .logo-container {
+        width: 100px;
+        height: 100px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        background-color: #f9f9f9;
+    }
+    
+    .logo-container img {
+        max-width: 100%;
+        max-height: 100%;
+    }
+    
+    .logo-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+    }
+    
+    .logo-placeholder i {
+        font-size: 40px;
+    }
+
+    /* Fix for overlay issues */
+    .has-dropdown-open .company-search-results {
+        display: block;
+        z-index: 1100; /* Increase z-index to ensure dropdown appears above other elements */
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .has-dropdown-open + .logo-actions {
+        margin-top: 10px !important; /* Don't push down as dramatically */
+        transition: margin-top 0.3s ease;
+        position: relative;
+        z-index: 1000;
+    }
+
+    /* Improve dropdown positioning */
+    .company-search-results {
+        position: absolute;
+        top: calc(100% + 5px); /* Add a small gap between input and dropdown */
+        left: 0;
+        width: 100%;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+        z-index: 1100; /* Higher z-index */
+    }
+
+    /* Ensure the search container has proper positioning */
+    .search-input-container {
+        position: relative;
+        margin-bottom: 10px;
+    }
+
+    /* Style dropdown items for better visibility */
+    .company-result-item {
+        display: flex;
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .company-result-item:hover {
+        background-color: #f0f7ff;
+    }
+
+    .company-result-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Improve company logo appearance */
+    .company-result-logo {
+        width: 40px;
+        height: 40px;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .company-logo-placeholder {
+        width: 40px;
+        height: 40px;
+        background-color: #f5f5f5;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #888;
+    }
+
+    /* Add focus styles for keyboard navigation */
+    .company-result-item.focused {
+        background-color: #e6f0ff;
+        outline: none;
+    }
 </style>
+
+<!-- Form Script -->
+<script>
+// Add click-away functionality to close the dropdown
+document.addEventListener('click', function(event) {
+    const searchContainer = document.querySelector('.search-input-container');
+    const searchResults = document.getElementById('company-search-results');
+    
+    if (searchContainer && searchResults) {
+        // If click is outside the search container and dropdown
+        if (!searchContainer.contains(event.target) && !searchResults.contains(event.target)) {
+            // Hide dropdown and remove open class
+            searchResults.style.display = 'none';
+            searchContainer.classList.remove('has-dropdown-open');
+        }
+    }
+});
+
+// Wait for DOM content to be loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const basicTitleField = document.getElementById('basic-title-field');
+    
+    // Enhanced dropdown navigation with keyboard
+    if (basicTitleField) {
+        basicTitleField.addEventListener('keydown', function(e) {
+            const dropdown = document.getElementById('company-search-results');
+            const isOpen = dropdown && dropdown.style.display === 'block';
+            
+            if (!isOpen) return;
+            
+            const items = dropdown.querySelectorAll('.company-result-item');
+            let currentIndex = -1;
+            
+            // Find currently focused item
+            items.forEach((item, index) => {
+                if (item.classList.contains('focused')) {
+                    currentIndex = index;
+                }
+            });
+            
+            // Handle keyboard navigation
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                
+                // Remove focus from all items
+                items.forEach(item => item.classList.remove('focused'));
+                
+                // Focus next item or first if at end
+                const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+                items[nextIndex].classList.add('focused');
+                items[nextIndex].scrollIntoView({ block: 'nearest' });
+            } 
+            else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                
+                // Remove focus from all items
+                items.forEach(item => item.classList.remove('focused'));
+                
+                // Focus previous item or last if at beginning
+                const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+                items[prevIndex].classList.add('focused');
+                items[prevIndex].scrollIntoView({ block: 'nearest' });
+            }
+            else if (e.key === 'Enter' && currentIndex >= 0) {
+                e.preventDefault();
+                
+                // Trigger click on focused item
+                items[currentIndex].click();
+            }
+            else if (e.key === 'Escape') {
+                // Close dropdown
+                dropdown.style.display = 'none';
+                basicTitleField.closest('.search-input-container').classList.remove('has-dropdown-open');
+            }
+        });
+    }
+});
+</script>
 
 <div class="admin-content-container">
     <form method="POST" enctype="multipart/form-data" class="content-form" {% if content %}data-content-type="{{ content.type }}"{% endif %}>
@@ -91,16 +999,20 @@
 
             <!-- Progress Steps -->
             <div class="form-progress">
-                <div class="progress-step active" data-step="type">
-                    <div class="step-number">1</div>
+                <div class="progress-step" data-step="type">
+                    <div class="step-number"><span>1</span></div>
                     <div class="step-label">Content Type</div>
                 </div>
+                <div class="progress-step" data-step="basic">
+                    <div class="step-number"><span>2</span></div>
+                    <div class="step-label">Basic Info</div>
+                </div>
                 <div class="progress-step" data-step="details">
-                    <div class="step-number">2</div>
-                    <div class="step-label">Content Details</div>
+                    <div class="step-number"><span>3</span></div>
+                    <div class="step-label">Additional Details</div>
                 </div>
                 <div class="progress-step" data-step="content">
-                    <div class="step-number">3</div>
+                    <div class="step-number"><span>4</span></div>
                     <div class="step-label">Page Content</div>
                 </div>
             </div>
@@ -109,178 +1021,407 @@
         <!-- Form Sections -->
         <div class="form-sections">
             <!-- Step 1: Content Type Selection -->
-            <section class="form-section active" id="type-section">
+            <section class="form-section" id="type-section">
                 <h3 class="section-title">Select Content Type</h3>
-                <div class="content-type-selector">
-                    <div class="type-option" data-value="project">
-                        <i class="fas fa-code"></i>
-                        <span>Project</span>
+                <div class="modern-content-type-selector">
+                    <div class="type-card" data-value="project">
+                        <div class="type-card-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="type-card-label">Project</div>
                     </div>
-                    <div class="type-option" data-value="experience">
-                        <i class="fas fa-briefcase"></i>
-                        <span>Experience</span>
+                    <div class="type-card" data-value="experience">
+                        <div class="type-card-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="type-card-label">Experience</div>
                     </div>
-                    <div class="type-option" data-value="blog">
-                        <i class="fas fa-pen"></i>
-                        <span>Blog Post</span>
+                    <div class="type-card" data-value="blog">
+                        <div class="type-card-icon">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                        <div class="type-card-label">Blog Post</div>
                     </div>
                     <input type="hidden" id="type" name="type" value="{{ request.args.get('type') or 'project' }}">
                 </div>
             </section>
-
-            <!-- Step 2: Content Details -->
-            <section class="form-section" id="details-section">
-                <div class="form-sections-grid">
-                    <!-- Basic Details Column -->
-                    <div class="form-column">                        
-                        <!-- Common Fields with dynamic labels (for project and blog) -->
-                        <div class="form-group title-description-fields">
-                            <label for="title" class="form-label" id="title-label">Title</label>
-                            <input type="text" class="form-control" id="title" name="title" 
-                                   value="{{ content.title if content else '' }}" required>
-                        </div>
-
-                        <div class="form-group title-description-fields">
-                            <label for="description" class="form-label" id="description-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3">{{ content.description if content else '' }}</textarea>
-                        </div>
-
-                        <!-- Experience Fields -->
-                        <div class="content-type-fields experience-fields">
-                            <div class="form-group organization-container">
-                                <div class="organization-logo-container" id="organization-logo-container">
-                                    {% if content and content.image_url %}
-                                        <div class="org-logo active">
-                                            <img src="{{ url_for('static', filename='uploads/' + content.image_url) }}" alt="{{ content.company }}">
-                                        </div>
-                                    {% else %}
-                                        <div class="org-logo empty">
-                                            <i class="fas fa-building"></i>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="org-details">
-                                    <label for="company" class="form-label">Organization</label>
-                                    <div class="autocomplete-wrapper">
-                                        <input type="text" class="form-control" id="company" 
-                                            name="company" autocomplete="off"
-                                           value="{{ content.company if content else '' }}" {% if request.args.get('type') == 'experience' %}required{% endif %}>
-                                        <div class="autocomplete-results" id="company-results"></div>
-                                    </div>
-                                    <input type="hidden" name="company_domain" id="company_domain" value="">
-                                    <input type="hidden" name="title" id="hidden_title" value="">
-                                    <input type="hidden" name="company_logo_url" id="company_logo_url" value="">
+            
+            <!-- Step 2: Basic Info -->
+            <section class="form-section" id="basic-section">
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline-secondary prev-step" data-prev="type"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button type="button" class="btn btn-primary next-step" data-next="details">Continue <i class="fas fa-arrow-right"></i></button>
+                </div>
+                
+                <h3 class="section-title" id="basic-title">
+                    {% if form.data and form.data.get('type') == 'experience' or request.args.get('type') == 'experience' %}
+                    Experience Basics
+                    {% elif form.data and form.data.get('type') == 'blog' or request.args.get('type') == 'blog' %}
+                    Blog Basics
+                    {% else %}
+                    Project Basics
+                    {% endif %}
+                </h3>
+                
+                <div class="basic-info-form">
+                    {% if form.data and form.data.get('type') == 'experience' or request.args.get('type') == 'experience' %}
+                    <!-- Experience Organization with Logo -->
+                    <div class="org-input-group">
+                        <div class="org-logo-preview" id="org-logo-preview">
+                            <div class="logo-container">
+                                <div class="logo-placeholder">
+                                    <i class="fas fa-building"></i>
                                 </div>
                             </div>
-
-                            <div class="form-group">
-                                <label for="position" class="form-label">Position</label>
-                                <input type="text" class="form-control" id="position" 
-                                       name="position" 
-                                       value="{{ content.position if content else '' }}" {% if request.args.get('type') == 'experience' %}required{% endif %}>
+                        </div>
+                        <div class="org-details">
+                            <div class="form-group mb-2">
+                                <label for="basic-title-field" class="form-label">Organization Name</label>
+                                <div class="search-input-container">
+                                    <input type="text" class="form-control" id="basic-title-field" name="title" 
+                                          value="{{ content.title if content else '' }}" required
+                                          placeholder="Enter organization name...">
+                                    <div class="search-spinner"><i class="fas fa-spinner fa-spin"></i></div>
+                                </div>
+                                <div id="company-search-results" class="company-search-results"></div>
+                            </div>
+                            <div class="logo-actions mt-3 mb-4">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="fetch-logo-btn">
+                                    <i class="fas fa-search"></i> Find Logo
+                                </button>
+                                <span class="text-muted">or</span>
+                                <input type="file" id="image" name="image" accept="image/*" class="d-none">
+                                <button type="button" class="btn btn-sm btn-outline-secondary upload-image-btn">
+                                    <i class="fas fa-upload"></i> Upload Logo
+                                </button>
+                                <input type="hidden" id="company_logo_url" name="company_logo_url" value="">
                             </div>
                         </div>
                     </div>
-
-                    <!-- Specific Info Column -->
-                    <div class="form-column">
-                        <!-- Project Fields -->
-                        <div class="content-type-fields project-fields">
-                            <div class="form-group">
-                                <label for="project_url" class="form-label">Project URL</label>
-                                <input type="url" class="form-control" id="project_url" 
-                                       name="project_url" 
-                                       value="{{ content.project_url if content else '' }}">
+                    
+                    <!-- Role Overview -->
+                    <div class="form-group mt-4">
+                        <label for="basic-description" class="form-label">Role Overview</label>
+                        <textarea class="form-control" id="basic-description" name="description" 
+                                  rows="4">{{ content.description if content else '' }}</textarea>
+                        <small class="text-muted">A brief overview of your role and responsibilities</small>
+                    </div>
+                    {% else %}
+                    <!-- Project/Blog Name -->
+                    <div class="form-group">
+                        <label for="basic-title-field" class="form-label" id="title-label">
+                            {% if form.data and form.data.get('type') == 'blog' or request.args.get('type') == 'blog' %}
+                            Blog Title
+                            {% else %}
+                            Project Name
+                            {% endif %}
+                        </label>
+                        <input type="text" class="form-control" id="basic-title-field" name="title" 
+                               value="{{ content.title if content else '' }}" required>
+                    </div>
+                    
+                    <!-- Project/Blog Description -->
+                    <div class="form-group">
+                        <label for="basic-description" class="form-label" id="description-label">
+                            {% if form.data and form.data.get('type') == 'blog' or request.args.get('type') == 'blog' %}
+                            Blog Introduction
+                            {% else %}
+                            Project Description
+                            {% endif %}
+                        </label>
+                        <textarea class="form-control" id="basic-description" name="description" 
+                                  rows="4">{{ content.description if content else '' }}</textarea>
+                        <small class="text-muted">
+                            {% if form.data and form.data.get('type') == 'blog' or request.args.get('type') == 'blog' %}
+                            An introduction to your blog post
+                            {% else %}
+                            A brief overview of what this project is about
+                            {% endif %}
+                        </small>
+                    </div>
+                    
+                    <!-- Project/Blog Image -->
+                    <div class="form-group">
+                        <label for="image" class="form-label" id="image-label">
+                            {% if form.data and form.data.get('type') == 'blog' or request.args.get('type') == 'blog' %}
+                            Featured Image
+                            {% else %}
+                            Project Screenshot
+                            {% endif %}
+                        </label>
+                        <div class="image-upload-container">
+                            <div id="image-preview-container" class="clickable">
+                                <div class="image-preview {% if content and content.image_url %}active{% endif %}">
+                                    {% if content and content.image_url %}
+                                        <img src="{{ url_for('static', filename='uploads/' + content.image_url) }}" alt="Preview">
+                                        <div class="image-actions">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-image" title="Remove Image">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    {% else %}
+                                        <div class="empty-state">
+                                            <i class="fas fa-image"></i>
+                                            <span>No image selected</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
-
-                            <div class="form-group">
-                                <label for="github_url" class="form-label">GitHub URL</label>
-                                <input type="url" class="form-control" id="github_url" 
-                                       name="github_url" 
-                                       value="{{ content.github_url if content else '' }}">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="tech_stack" class="form-label">Tech Stack</label>
-                                <input type="text" class="form-control" id="tech_stack" 
-                                       name="tech_stack" placeholder="e.g., Python, React, PostgreSQL" 
-                                       value="{{ content.tech_stack if content else '' }}">
+                            
+                            <div class="image-actions-row">
+                                <input type="file" id="image" name="image" accept="image/*" class="d-none">
+                                <button type="button" class="btn btn-outline-primary upload-image-btn">
+                                    <i class="fas fa-upload"></i> Upload Image
+                                </button>
+                                <button type="button" id="generate-image-btn" class="btn btn-outline-secondary">
+                                    <i class="fas fa-magic"></i> Generate Image
+                                </button>
+                                <input type="hidden" id="generated_image" name="generated_image" value="">
                             </div>
                         </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
 
-                        <!-- Experience Fields -->
-                        <div class="content-type-fields experience-fields">
-                            <div class="form-group">
+            <!-- Step 3: Content Details -->
+            <section class="form-section" id="details-section">
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline-secondary prev-step" data-prev="basic"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button type="button" class="btn btn-primary next-step" data-next="content">Continue <i class="fas fa-arrow-right"></i></button>
+                </div>
+                
+                <div class="form-sections-grid">
+                    <!-- Project Fields -->
+                    <div class="content-type-fields project-fields">
+                        <h4 class="section-header">Project Details</h4>
+                        
+                        <div class="form-group">
+                            <label for="project_status" class="form-label">Project Status</label>
+                            <select class="form-control" id="project_status" name="project_status">
+                                <option value="" {% if not content or not content.project_status %}selected{% endif %}>Select Status</option>
+                                <option value="Completed" {% if content and content.project_status == 'Completed' %}selected{% endif %}>Completed</option>
+                                <option value="In Progress" {% if content and content.project_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                <option value="Ongoing" {% if content and content.project_status == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                                <option value="Paused" {% if content and content.project_status == 'Paused' %}selected{% endif %}>Paused</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="project_client" class="form-label">Client/Company (Optional)</label>
+                            <input type="text" class="form-control" id="project_client" 
+                                   name="project_client" 
+                                   value="{{ content.project_client if content else '' }}">
+                        </div>
+
+                        <!-- Timeline Row -->
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
                                 <label for="start_date" class="form-label">Start Date</label>
                                 <input type="date" class="form-control" id="start_date" 
                                        name="start_date" 
-                                       value="{{ content.start_date if content else '' }}" {% if request.args.get('type') == 'experience' %}required{% endif %}>
+                                       value="{{ content.start_date if content else '' }}">
                             </div>
-
-                            <div class="form-group">
+                            <div class="form-group col-md-6">
                                 <label for="end_date" class="form-label">End Date</label>
                                 <input type="date" class="form-control" id="end_date" 
                                        name="end_date" 
                                        value="{{ content.end_date if content else '' }}">
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="skills" class="form-label">Skills</label>
-                                <input type="text" class="form-control" id="skills" 
-                                       name="skills" placeholder="e.g., Leadership, Project Management, Agile" 
-                                       value="{{ content.skills if content else '' }}">
-                                <small class="text-muted">Comma-separated list of skills</small>
+                        <h4 class="section-header mt-4">Links & Technologies</h4>
+                        
+                        <!-- Links Row -->
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="project_url" class="form-label">Project URL</label>
+                                <input type="url" class="form-control" id="project_url" 
+                                       name="project_url" 
+                                       value="{{ content.project_url if content else '' }}">
                             </div>
-                            
-                            <div class="form-group">
-                                <label for="responsibilities" class="form-label">Key Responsibilities</label>
-                                <textarea class="form-control" id="responsibilities" name="responsibilities" 
-                                    rows="4" placeholder="Describe your core job responsibilities">{{ content.responsibilities if content else '' }}</textarea>
+                            <div class="form-group col-md-6">
+                                <label for="github_url" class="form-label">GitHub URL</label>
+                                <input type="url" class="form-control" id="github_url" 
+                                       name="github_url" 
+                                       value="{{ content.github_url if content else '' }}">
                             </div>
                         </div>
 
-                        <!-- Blog Fields -->
-                        <div class="content-type-fields blog-fields">
-                            <div class="form-group">
-                                <label for="blog_content" class="form-label">Summary</label>
-                                <textarea class="form-control" id="blog_content" 
-                                            name="content" 
-                                        rows="5">{{ content.content if content else '' }}</textarea>
-                            </div>
+                        <div class="form-group">
+                            <label for="tech_stack" class="form-label">Tech Stack</label>
+                            <input type="text" class="form-control" id="tech_stack" 
+                                   name="tech_stack" placeholder="e.g., Python, React, PostgreSQL" 
+                                   value="{{ content.tech_stack if content else '' }}">
+                            <small class="text-muted">Comma-separated list of technologies</small>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="tags" class="form-label">Tags</label>
-                                <input type="text" class="form-control" id="tags" 
-                                       name="tags" placeholder="e.g., Python, Web Development, Tutorial" 
-                                       value="{{ content.tags if content else '' }}">
+                        <!-- Project Screenshots Section -->
+                        <div class="form-group">
+                            <label class="form-label">Project Screenshots</label>
+                            <div class="screenshots-container">
+                                <div class="screenshots-grid" id="screenshots-grid">
+                                    {% if content and content.screenshots %}
+                                        {% for screenshot in content.screenshots %}
+                                        <div class="screenshot-item">
+                                            <div class="screenshot-preview">
+                                                <img src="{% if screenshot.startswith('http') %}{{ screenshot }}{% else %}{{ url_for('static', filename='uploads/' + screenshot) }}{% endif %}" alt="Screenshot">
+                                                <div class="screenshot-actions">
+                                                    <button type="button" class="btn btn-sm btn-outline-light screenshot-preview-btn" title="Preview">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger screenshot-remove-btn" title="Remove">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" name="screenshots" value="{{ screenshot }}">
+                                        </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                    
+                                    <!-- Add Screenshot Item -->
+                                    <div class="screenshot-add-item" id="add-screenshot">
+                                        <div class="screenshot-add-btn">
+                                            <i class="fas fa-plus"></i>
+                                            <span>Add Screenshot</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            <small class="text-muted">Add multiple screenshots to showcase your project from different angles</small>
+                        </div>
+
+                        <h4 class="section-header mt-4">Media</h4>
+                        
+                        <div class="form-group media-urls-container">
+                            <label for="media_url" class="form-label">Media URLs</label>
+                            <div id="media-url-list">
+                                <!-- Initial media URL input -->
+                                <div class="media-url-entry input-group mb-2">
+                                    <input type="url" class="form-control media-url-input" name="media_urls[]" 
+                                          placeholder="Enter media URL (image, video, etc.)">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-danger remove-media-url" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Additional media URLs will be added here by JavaScript -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="add-media-url-btn">
+                                <i class="fas fa-plus"></i> Add Another Media URL
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Experience Fields -->
+                    <div class="content-type-fields experience-fields">
+                        <h4 class="section-header">Organization Details</h4>
+                        
+                        <div class="form-group organization-container">
+                            <div class="organization-logo-container" id="organization-logo-container">
+                                {% if content and content.image_url %}
+                                    <div class="org-logo active">
+                                        <img src="{{ url_for('static', filename='uploads/' + content.image_url) }}" alt="{{ content.company }}">
+                                    </div>
+                                {% else %}
+                                    <div class="org-logo empty">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="org-details">
+                                <label for="company" class="form-label">Organization</label>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" class="form-control" id="company" 
+                                        name="company" autocomplete="off"
+                                       value="{{ content.company if content else '' }}" {% if request.args.get('type') == 'experience' %}required{% endif %}>
+                                    <div class="autocomplete-results" id="company-results"></div>
+                                </div>
+                                <input type="hidden" name="company_domain" id="company_domain" value="">
+                                <input type="hidden" name="title" id="hidden_title" value="">
+                                <input type="hidden" name="company_logo_url" id="company_logo_url" value="">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="position" class="form-label">Position</label>
+                            <input type="text" class="form-control" id="position" 
+                                   name="position" 
+                                   value="{{ content.position if content else '' }}" {% if request.args.get('type') == 'experience' %}required{% endif %}>
+                        </div>
+
+                        <!-- Timeline Row -->
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" 
+                                       name="start_date" 
+                                       value="{{ content.start_date if content else '' }}" {% if request.args.get('type') == 'experience' %}required{% endif %}>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end_date" 
+                                       name="end_date" 
+                                       value="{{ content.end_date if content else '' }}">
+                            </div>
+                        </div>
+
+                        <h4 class="section-header mt-4">Skills & Responsibilities</h4>
+                        
+                        <div class="form-group">
+                            <label for="skills" class="form-label">Skills</label>
+                            <input type="text" class="form-control" id="skills" 
+                                   name="skills" placeholder="e.g., Leadership, Project Management, Agile" 
+                                   value="{{ content.skills if content else '' }}">
+                            <small class="text-muted">Comma-separated list of skills</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="responsibilities" class="form-label">Key Responsibilities</label>
+                            <textarea class="form-control" id="responsibilities" name="responsibilities" 
+                                rows="4" placeholder="Describe your core job responsibilities">{{ content.responsibilities if content else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Blog Fields -->
+                    <div class="content-type-fields blog-fields">
+                        <h4 class="section-header">Blog Details</h4>
+                        
+                        <div class="form-group">
+                            <label for="blog_content" class="form-label">Summary</label>
+                            <textarea class="form-control" id="blog_content" 
+                                        name="content" 
+                                    rows="5">{{ content.content if content else '' }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="tags" 
+                                   name="tags" placeholder="e.g., Python, Web Development, Tutorial" 
+                                   value="{{ content.tags if content else '' }}">
+                            <small class="text-muted">Comma-separated list of topics</small>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Navigation Buttons -->
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline-secondary prev-step" data-prev="type">Back to Content Type</button>
-                    <button type="button" class="btn btn-primary next-step" data-next="content">Continue to Page Content</button>
-                </div>
             </section>
 
-            <!-- Step 3: Page Content -->
+            <!-- Step 4: Page Content -->
             <section class="form-section" id="content-section">
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline-secondary prev-step" data-prev="details"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button type="submit" class="btn btn-primary submit-btn">
+                        {{ 'Save Changes' if content else 'Create Content' }} <i class="fas fa-check"></i>
+                    </button>
+                </div>
+                
                 <div class="page-builder-container">
                     <h3 class="section-title">Page Content</h3>
                     <p class="section-description">Build your page by adding and arranging content elements.</p>
                     
                     {% include 'components/_page_content.html' with context %}
-                </div>
-                
-                <!-- Navigation Buttons -->
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline-secondary prev-step" data-prev="details">Back to Details</button>
-                    <button type="submit" class="btn btn-primary submit-btn">
-                        {{ 'Save Changes' if content else 'Create Content' }}
-                    </button>
                 </div>
             </section>
         </div>
@@ -289,12 +1430,87 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const typeOptions = document.querySelectorAll('.type-option');
+    const typeCards = document.querySelectorAll('.type-card');
     const typeInput = document.getElementById('type');
     const form = document.querySelector('form');
     const progressSteps = document.querySelectorAll('.progress-step');
     const formSections = document.querySelectorAll('.form-section');
     const initialType = typeInput.value;
+    
+    // Initialize content media URLs if they exist
+    var contentMediaUrls = [];
+    
+    // Media URL functionality
+    function initMediaUrls() {
+        const addMediaUrlBtn = document.getElementById('add-media-url-btn');
+        const mediaUrlList = document.getElementById('media-url-list');
+        
+        if (!addMediaUrlBtn || !mediaUrlList) return;
+        
+        // Load existing media URLs if available
+        {% if content and content.media_urls %}
+            // Use server-provided data
+            contentMediaUrls = JSON.parse('{{ content.media_urls|tojson }}');
+        {% endif %}
+        
+        // Add a new media URL input
+        addMediaUrlBtn.addEventListener('click', function() {
+            const newEntry = document.createElement('div');
+            newEntry.className = 'media-url-entry input-group mb-2';
+            newEntry.innerHTML = `
+                <input type="url" class="form-control media-url-input" name="media_urls[]" 
+                      placeholder="Enter media URL (image, video, etc.)">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-danger remove-media-url">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            mediaUrlList.appendChild(newEntry);
+            
+            // Show remove button on the first entry if there are now multiple entries
+            if (mediaUrlList.querySelectorAll('.media-url-entry').length > 1) {
+                mediaUrlList.querySelector('.remove-media-url').style.display = 'block';
+            }
+        });
+        
+        // Handle removal of media URL inputs
+        mediaUrlList.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-media-url')) {
+                e.target.closest('.media-url-entry').remove();
+                
+                // Hide remove button on the first entry if there's only one left
+                const entries = mediaUrlList.querySelectorAll('.media-url-entry');
+                if (entries.length === 1) {
+                    entries[0].querySelector('.remove-media-url').style.display = 'none';
+                }
+            }
+        });
+        
+        // Initialize with existing media URLs if available
+        if (typeof contentMediaUrls !== 'undefined' && Array.isArray(contentMediaUrls) && contentMediaUrls.length > 0) {
+            // Remove the initial empty input
+            mediaUrlList.innerHTML = '';
+            
+            // Add each existing URL
+            contentMediaUrls.forEach((url, index) => {
+                const newEntry = document.createElement('div');
+                newEntry.className = 'media-url-entry input-group mb-2';
+                newEntry.innerHTML = `
+                    <input type="url" class="form-control media-url-input" name="media_urls[]" 
+                          value="${url}" placeholder="Enter media URL (image, video, etc.)">
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-danger remove-media-url" ${index === 0 && contentMediaUrls.length === 1 ? 'style="display: none;"' : ''}>
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                mediaUrlList.appendChild(newEntry);
+            });
+        }
+    }
     
     // Dynamic field label mappings - moved to the top of the script
     const fieldLabels = {
@@ -325,6 +1541,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (titleLabel) titleLabel.textContent = labels.title;
             if (descriptionLabel) descriptionLabel.textContent = labels.description;
             
+            // Update basic section title
+            const basicTitle = document.getElementById('basic-title');
+            if (basicTitle) {
+                if (type === 'project') {
+                    basicTitle.textContent = 'Project Basics';
+                } else if (type === 'experience') {
+                    basicTitle.textContent = 'Experience Basics';
+                } else if (type === 'blog') {
+                    basicTitle.textContent = 'Blog Basics';
+                }
+            }
+            
             // Check if image-label exists before updating
             const imageLabel = document.getElementById('image-label');
             if (imageLabel) {
@@ -345,21 +1573,37 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update progress indicators
         progressSteps.forEach(progressStep => {
-            if (progressStep.getAttribute('data-step') === step) {
+            const stepName = progressStep.getAttribute('data-step');
+            
+            if (stepName === step) {
                 progressStep.classList.add('active');
+                progressStep.classList.remove('completed');
             } else {
                 progressStep.classList.remove('active');
                 
                 // Add completed class to previous steps
-                if ((step === 'details' && progressStep.getAttribute('data-step') === 'type') ||
-                    (step === 'content' && (progressStep.getAttribute('data-step') === 'type' || 
-                                           progressStep.getAttribute('data-step') === 'details'))) {
+                if ((step === 'basic' && stepName === 'type' && typeInput.value) ||
+                    (step === 'details' && (stepName === 'type' || stepName === 'basic')) ||
+                    (step === 'content' && (stepName === 'type' || stepName === 'basic' || stepName === 'details'))) {
                     progressStep.classList.add('completed');
                 } else {
                     progressStep.classList.remove('completed');
                 }
             }
         });
+
+        // Clear selection state when returning to type selection
+        if (step === 'type') {
+            document.querySelectorAll('.type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            typeInput.value = '';
+            
+            // Remove all completed states when going back to type
+            progressSteps.forEach(step => {
+                step.classList.remove('completed');
+            });
+        }
     }
     
     // Function to update type-specific fields
@@ -385,11 +1629,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Handle content type selection - navigate to details page on selection
-    typeOptions.forEach(option => {
-        option.addEventListener('click', function() {
+    // Show first section by default
+    document.getElementById('type-section').classList.add('active');
+    
+    // Handle content type selection - navigate to basic info page on selection
+    typeCards.forEach(card => {
+        card.addEventListener('click', function() {
             // Update visuals
-            document.querySelectorAll('.type-option').forEach(opt => {
+            document.querySelectorAll('.type-card').forEach(opt => {
                 opt.classList.remove('selected');
             });
             this.classList.add('selected');
@@ -404,10 +1651,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update field labels
             updateFieldLabels(selectedType);
             
-            // Automatically proceed to details page after selection
-            setTimeout(() => {
-                navigateToStep('details');
-            }, 300);
+            // Immediately proceed to basic info page
+            navigateToStep('basic');
         });
     });
     
@@ -423,6 +1668,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize form state
     updateTypeSpecificFields(initialType);
     updateFieldLabels(initialType);
+    
+    // Set selected state for initial type
+    /* document.querySelectorAll('.type-card').forEach(card => {
+        if (card.getAttribute('data-value') === initialType) {
+            card.classList.add('selected');
+        }
+    }); */
     
     // Toggle image generation features based on content type
     function toggleImageGenerationFeatures(type) {
@@ -444,8 +1696,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialization for edit mode
     if (form.hasAttribute('data-content-type')) {
-        // If we're in edit mode, skip the content type selection
+        // If we're in edit mode, skip the content type selection and basic info
+        const contentType = form.getAttribute('data-content-type');
+        typeInput.value = contentType;
+        
+        // Set selected state for content type
+        document.querySelectorAll('.type-card').forEach(card => {
+            if (card.getAttribute('data-value') === contentType) {
+                card.classList.add('selected');
+            }
+        });
+        
+        // Update field labels and visibility
+        updateTypeSpecificFields(contentType);
+        updateFieldLabels(contentType);
+        
+        // Navigate to details in edit mode
         navigateToStep('details');
+    } else {
+        // In create mode, start at type selection
+        navigateToStep('type');
     }
     
     // Safely initialize functions that might depend on elements that could be missing
@@ -478,6 +1748,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 hiddenTitleInput.value = companyInput.value;
             }
         }
+
+        // Initialize media URL functionality
+        initMediaUrls();
+        
+        // Initialize image preview functionality
+        if (document.getElementById('image') && document.getElementById('image-preview-container')) {
+            initImagePreview();
+        }
+        
+        // Initialize image generation
+        if (document.getElementById('generate-image-btn')) {
+            initImageGeneration();
+        }
+        
+        // Initialize company search
+        if (document.getElementById('company')) {
+            initCompanySearch();
+        }
     } catch (error) {
         console.error('Error initializing form functions:', error);
     }
@@ -486,6 +1774,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function initImagePreview() {
         const imageInput = document.getElementById('image');
         const previewContainer = document.getElementById('image-preview-container');
+        const uploadBtn = document.querySelector('.upload-image-btn');
+        
+        if (!imageInput || !previewContainer) return;
+        
+        // When upload button is clicked, trigger file input
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', function() {
+                imageInput.click();
+            });
+        }
         
         // Preview uploaded image
         imageInput.addEventListener('change', function(e) {
@@ -494,28 +1792,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 const reader = new FileReader();
                 
                 reader.onload = function(e) {
-                    previewContainer.innerHTML = `
-                        <div class="image-preview active">
-                            <img src="${e.target.result}" alt="Image Preview">
-                            <div class="image-actions">
-                                <button type="button" class="btn btn-sm btn-outline-danger remove-image" title="Remove Image">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
+                    const previewElement = previewContainer.querySelector('.image-preview');
+                    previewElement.classList.add('active');
+                    previewElement.innerHTML = `
+                        <img src="${e.target.result}" alt="Image Preview">
+                        <div class="image-actions">
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-image" title="Remove Image">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     `;
                     
                     // Add event listener to remove button
                     const removeBtn = previewContainer.querySelector('.remove-image');
                     if (removeBtn) {
-                        removeBtn.addEventListener('click', function() {
+                        removeBtn.addEventListener('click', function(e) {
+                            e.stopPropagation(); // Prevent click from triggering file upload
                             imageInput.value = '';
-                            previewContainer.innerHTML = `
-                                <div class="image-preview">
-                                    <div class="empty-state">
-                                        <i class="fas fa-image"></i>
-                                        <span>No image selected</span>
-                                    </div>
+                            previewElement.classList.remove('active');
+                            previewElement.innerHTML = `
+                                <div class="empty-state">
+                                    <i class="fas fa-image"></i>
+                                    <span>No image selected</span>
                                 </div>
                             `;
                             const generatedImageInput = document.getElementById('generated_image');
@@ -546,8 +1844,569 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Company search and logo functionality
     function initCompanySearch() {
-        // Implementation goes here
+        const basicTitleField = document.getElementById('basic-title-field');
+        const orgLogoPreview = document.getElementById('org-logo-preview');
+        const logoContainer = orgLogoPreview ? orgLogoPreview.querySelector('.logo-container') : null;
+        const searchResults = document.getElementById('company-search-results');
+        const companyLogoUrlInput = document.getElementById('company_logo_url');
+        const contentTypeInput = document.getElementById('type');
+        const fetchLogoBtn = document.getElementById('fetch-logo-btn');
+        const uploadLogoBtn = document.querySelector('.upload-image-btn');
+        const imageInput = document.getElementById('image');
+        
+        if (!basicTitleField || !orgLogoPreview) return;
+        
+        // Debounce function to prevent too many API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this, args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+        
+        // Auto-search as user types (with debounce)
+        basicTitleField.addEventListener('input', debounce(function() {
+            const query = this.value.trim();
+            
+            // Only search if we have at least 3 characters
+            if (query.length < 3) {
+                if (searchResults) {
+                    searchResults.style.display = 'none';
+                    basicTitleField.closest('.search-input-container').classList.remove('has-dropdown-open');
+                }
+                return;
+            }
+            
+            // Show loading indicator immediately in the dropdown
+            if (searchResults) {
+                searchResults.innerHTML = `
+                    <div class="search-loading-indicator">
+                        <div class="spinner-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <div class="loading-text">Searching...</div>
+                    </div>
+                `;
+                searchResults.style.display = 'block';
+                basicTitleField.closest('.search-input-container').classList.add('has-dropdown-open');
+            }
+            
+            // Wait 1 second before actually searching (reduced from 3 seconds for better UX)
+            setTimeout(() => {
+                // Search for company info
+                searchCompany(query);
+            }, 1000);
+        }, 300));
+        
+        // Add keyboard navigation support
+        basicTitleField.addEventListener('keydown', function(e) {
+            const dropdown = document.getElementById('company-search-results');
+            const isOpen = dropdown && dropdown.style.display === 'block';
+            
+            if (!isOpen) return;
+            
+            const items = dropdown.querySelectorAll('.company-result-item');
+            let currentIndex = -1;
+            
+            // Find currently focused item
+            items.forEach((item, index) => {
+                if (item.classList.contains('focused')) {
+                    currentIndex = index;
+                }
+            });
+            
+            // Handle keyboard navigation
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                
+                // Remove focus from all items
+                items.forEach(item => item.classList.remove('focused'));
+                
+                // Focus next item or first if at end
+                const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+                items[nextIndex].classList.add('focused');
+                items[nextIndex].scrollIntoView({ block: 'nearest' });
+            } 
+            else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                
+                // Remove focus from all items
+                items.forEach(item => item.classList.remove('focused'));
+                
+                // Focus previous item or last if at beginning
+                const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+                items[prevIndex].classList.add('focused');
+                items[prevIndex].scrollIntoView({ block: 'nearest' });
+            }
+            else if (e.key === 'Enter' && currentIndex >= 0) {
+                e.preventDefault();
+                
+                // Trigger click on focused item
+                items[currentIndex].click();
+            }
+            else if (e.key === 'Escape') {
+                // Close dropdown
+                dropdown.style.display = 'none';
+                basicTitleField.closest('.search-input-container').classList.remove('has-dropdown-open');
+            }
+        });
+        
+        // Manual search with button
+        if (fetchLogoBtn) {
+            fetchLogoBtn.addEventListener('click', function() {
+                const query = basicTitleField.value.trim();
+                if (query.length > 0) {
+                    // Show loading indicator immediately in the dropdown
+                    if (searchResults) {
+                        searchResults.innerHTML = `
+                            <div class="search-loading-indicator">
+                                <div class="spinner-container">
+                                    <div class="spinner"></div>
+                                </div>
+                                <div class="loading-text">Searching...</div>
+                            </div>
+                        `;
+                        searchResults.style.display = 'block';
+                        basicTitleField.closest('.search-input-container').classList.add('has-dropdown-open');
+                    }
+                    
+                    // Wait 1 second before actually searching (reduced from 3 seconds)
+                    setTimeout(() => {
+                        searchCompany(query);
+                    }, 1000);
+                }
+            });
+        }
+        
+        // Upload logo button
+        if (uploadLogoBtn && imageInput) {
+            uploadLogoBtn.addEventListener('click', function() {
+                imageInput.click();
+            });
+            
+            // Handle file selection for logo
+            imageInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        updateLogoPreview(e.target.result);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Function to search for company info
+        function searchCompany(query) {
+            query = query.toLowerCase();
+            
+            // Mock company data for demonstration purposes
+            const sampleCompanies = [
+                { name: "Microsoft", domain: "microsoft.com" },
+                { name: "Apple", domain: "apple.com" },
+                { name: "Google", domain: "google.com" },
+                { name: "Amazon", domain: "amazon.com" },
+                { name: "Meta", domain: "meta.com" },
+                { name: "Netflix", domain: "netflix.com" },
+                { name: "Tesla", domain: "tesla.com" },
+                { name: "IBM", domain: "ibm.com" },
+                { name: "Intel", domain: "intel.com" },
+                { name: "Oracle", domain: "oracle.com" },
+                { name: "Adobe", domain: "adobe.com" },
+                { name: "Twitter", domain: "twitter.com" },
+                { name: "LinkedIn", domain: "linkedin.com" },
+                { name: "LinkedIn Learning", domain: "linkedin.com/learning" },
+                { name: "Hewlett-Packard", domain: "hp.com" },
+                { name: "Dell", domain: "dell.com" },
+                { name: "Cisco", domain: "cisco.com" },
+                { name: "Salesforce", domain: "salesforce.com" }
+            ];
+            
+            // Filter the sample companies based on the query
+            const filteredCompanies = sampleCompanies.filter(company => 
+                company.name.toLowerCase().includes(query) || 
+                company.domain.toLowerCase().includes(query)
+            );
+            
+            // Clear previous results
+            if (searchResults) {
+                searchResults.innerHTML = '';
+                
+                if (filteredCompanies.length === 0) {
+                    // Show no results message
+                    searchResults.innerHTML = '<div class="no-results">No companies found</div>';
+                    searchResults.style.display = 'block';
+                    basicTitleField.closest('.search-input-container').classList.add('has-dropdown-open');
+                    return;
+                }
+                
+                // Build results HTML with logos
+                let resultsHtml = '';
+                filteredCompanies.forEach(company => {
+                    resultsHtml += `
+                        <div class="company-result-item" 
+                             data-name="${company.name}" 
+                             data-domain="${company.domain}">
+                            <div class="company-result-logo">
+                                <div class="company-logo-placeholder">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                            </div>
+                            <div class="company-result-info">
+                                <div class="company-name">${company.name}</div>
+                                <div class="company-domain">${company.domain}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Add results to dropdown
+                searchResults.innerHTML = resultsHtml;
+                searchResults.style.display = 'block';
+                basicTitleField.closest('.search-input-container').classList.add('has-dropdown-open');
+                
+                // Pre-fetch logos for results (in background)
+                filteredCompanies.forEach(company => {
+                    fetchCompanyLogoForDropdown(company.name, company.domain);
+                });
+                
+                // Add click events to results
+                document.querySelectorAll('.company-result-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const companyName = this.getAttribute('data-name');
+                        const companyDomain = this.getAttribute('data-domain');
+                        
+                        // Set the company name in the input field
+                        if (basicTitleField) {
+                            basicTitleField.value = companyName;
+                        }
+                        
+                        // Get full company logo
+                        fetchCompanyLogo(companyName, companyDomain);
+                        
+                        // Hide dropdown
+                        searchResults.style.display = 'none';
+                        basicTitleField.closest('.search-input-container').classList.remove('has-dropdown-open');
+                    });
+                });
+            }
+        }
+        
+        // Function to fetch company logos for the dropdown items
+        function fetchCompanyLogoForDropdown(companyName, domain) {
+            // Find the result item
+            const resultItem = document.querySelector(`.company-result-item[data-domain="${domain}"]`);
+            if (!resultItem) return;
+            
+            const logoPlaceholder = resultItem.querySelector('.company-logo-placeholder');
+            if (!logoPlaceholder) return;
+            
+            // Map of sample company logos for demonstration
+            const companyLogos = {
+                "microsoft.com": "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+                "apple.com": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+                "google.com": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+                "amazon.com": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+                "meta.com": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg",
+                "netflix.com": "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+                "tesla.com": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png",
+                "ibm.com": "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg",
+                "intel.com": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Intel_logo_%282006-2020%29.svg",
+                "oracle.com": "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg",
+                "adobe.com": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Adobe_Corporate_logo.svg",
+                "twitter.com": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg",
+                "linkedin.com": "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
+                "linkedin.com/learning": "https://cdn.worldvectorlogo.com/logos/lynda-1.svg",
+                "hp.com": "https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_2012.svg",
+                "dell.com": "https://upload.wikimedia.org/wikipedia/commons/1/18/Dell_logo_2016.svg",
+                "cisco.com": "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg",
+                "salesforce.com": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Salesforce.com_logo.svg"
+            };
+            
+            // Check if we have a logo for this domain
+            if (companyLogos[domain]) {
+                logoPlaceholder.innerHTML = `<img src="${companyLogos[domain]}" alt="${companyName}">`;
+                logoPlaceholder.classList.add('has-logo');
+                return;
+            }
+            
+            // Generate a fallback logo based on company name
+            const fallbackLogoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=random&color=fff&size=64&bold=true`;
+            logoPlaceholder.innerHTML = `<img src="${fallbackLogoUrl}" alt="${companyName}">`;
+            logoPlaceholder.classList.add('has-logo');
+        }
+        
+        // Function to fetch company logo
+        function fetchCompanyLogo(companyName, domain) {
+            // Show loading in logo preview
+            logoContainer.innerHTML = `
+                <div class="logo-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Loading...</span>
+                </div>
+            `;
+            
+            // Map of sample company logos for demonstration
+            const companyLogos = {
+                "microsoft.com": "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+                "apple.com": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+                "google.com": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+                "amazon.com": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+                "meta.com": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg",
+                "netflix.com": "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+                "tesla.com": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png",
+                "ibm.com": "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg",
+                "intel.com": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Intel_logo_%282006-2020%29.svg",
+                "oracle.com": "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg",
+                "adobe.com": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Adobe_Corporate_logo.svg",
+                "twitter.com": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg",
+                "linkedin.com": "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
+                "linkedin.com/learning": "https://cdn.worldvectorlogo.com/logos/lynda-1.svg",
+                "hp.com": "https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_2012.svg",
+                "dell.com": "https://upload.wikimedia.org/wikipedia/commons/1/18/Dell_logo_2016.svg",
+                "cisco.com": "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg",
+                "salesforce.com": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Salesforce.com_logo.svg"
+            };
+            
+            // Check if we have a logo for this domain
+            if (companyLogos[domain]) {
+                updateLogoPreview(companyLogos[domain]);
+                
+                // Store the logo URL
+                if (companyLogoUrlInput) {
+                    companyLogoUrlInput.value = companyLogos[domain];
+                }
+                return;
+            }
+            
+            // Generate a fallback logo based on company name
+            const fallbackLogoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=random&color=fff&size=128&bold=true`;
+            updateLogoPreview(fallbackLogoUrl);
+            
+            // Store the logo URL
+            if (companyLogoUrlInput) {
+                companyLogoUrlInput.value = fallbackLogoUrl;
+            }
+        }
+        
+        // Helper function to update logo preview
+        function updateLogoPreview(logoUrl) {
+            if (!logoContainer) return;
+            
+            logoContainer.innerHTML = `
+                <img src="${logoUrl}" alt="Company Logo">
+                <button type="button" class="btn btn-sm btn-danger remove-logo">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            logoContainer.classList.add('has-logo');
+            
+            // Add event listener to remove button
+            const removeBtn = logoContainer.querySelector('.remove-logo');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // Clear logo URL input
+                    if (companyLogoUrlInput) {
+                        companyLogoUrlInput.value = '';
+                    }
+                    
+                    // Reset logo preview
+                    logoContainer.innerHTML = `
+                        <div class="logo-placeholder">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    `;
+                    logoContainer.classList.remove('has-logo');
+                });
+            }
+        }
+
+        // Hide search results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (basicTitleField && searchResults) {
+                // If click is outside the search container, fetch button, and dropdown
+                if (!basicTitleField.contains(e.target) && 
+                    !searchResults.contains(e.target) &&
+                    (!fetchLogoBtn || !fetchLogoBtn.contains(e.target))) {
+                    
+                    // Hide dropdown and remove open class
+                    searchResults.style.display = 'none';
+                    basicTitleField.closest('.search-input-container').classList.remove('has-dropdown-open');
+                }
+            }
+        });
+        
+        // Show results when focusing on the input field
+        basicTitleField.addEventListener('focus', function() {
+            const query = this.value.trim();
+            
+            // If there's text already in the field, show existing results or fetch new ones
+            if (query.length >= 3) {
+                // If we already have results, show them
+                if (searchResults.childElementCount > 0 && searchResults.querySelector('.company-result-item')) {
+                    searchResults.style.display = 'block';
+                    basicTitleField.closest('.search-input-container').classList.add('has-dropdown-open');
+                } else {
+                    // Otherwise trigger a new search
+                    // Show loading indicator
+                    searchResults.innerHTML = `
+                        <div class="search-loading-indicator">
+                            <div class="spinner-container">
+                                <div class="spinner"></div>
+                            </div>
+                            <div class="loading-text">Searching...</div>
+                        </div>
+                    `;
+                    searchResults.style.display = 'block';
+                    basicTitleField.closest('.search-input-container').classList.add('has-dropdown-open');
+                    
+                    // Search again
+                    setTimeout(() => {
+                        searchCompany(query);
+                    }, 500);
+                }
+            }
+        });
     }
+
+    // Initialize screenshots functionality
+    initScreenshotsUpload();
 });
+
+// Initialize screenshots upload functionality
+function initScreenshotsUpload() {
+    const addBtn = document.getElementById('add-screenshot');
+    const screenshotsGrid = document.getElementById('screenshots-grid');
+    
+    if(!addBtn || !screenshotsGrid) return;
+    
+    // Add screenshot click handler
+    addBtn.addEventListener('click', function() {
+        // Create file input
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+        
+        // Trigger file selection
+        fileInput.click();
+        
+        // Handle file selection
+        fileInput.addEventListener('change', function(e) {
+            if(this.files && this.files[0]) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Create new screenshot item
+                    const newItem = createScreenshotItem(e.target.result, file.name);
+                    
+                    // Insert before add button
+                    screenshotsGrid.insertBefore(newItem, addBtn);
+                    
+                    // Initialize actions
+                    bindScreenshotItemEvents(newItem);
+                }
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // Remove the temporary input
+            document.body.removeChild(fileInput);
+        });
+    });
+    
+    // Bind existing screenshot items
+    document.querySelectorAll('.screenshot-item').forEach(item => {
+        bindScreenshotItemEvents(item);
+    });
+}
+
+// Create a new screenshot item element
+function createScreenshotItem(imgSrc, filename) {
+    const item = document.createElement('div');
+    item.className = 'screenshot-item';
+    
+    item.innerHTML = `
+        <div class="screenshot-preview">
+            <img src="${imgSrc}" alt="Screenshot">
+            <div class="screenshot-actions">
+                <button type="button" class="btn btn-sm btn-outline-light screenshot-preview-btn" title="Preview">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger screenshot-remove-btn" title="Remove">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <input type="hidden" name="screenshots" value="${filename}">
+    `;
+    
+    return item;
+}
+
+// Bind events to screenshot item
+function bindScreenshotItemEvents(item) {
+    // Preview button
+    const previewBtn = item.querySelector('.screenshot-preview-btn');
+    if(previewBtn) {
+        previewBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const imgSrc = item.querySelector('img').src;
+            openScreenshotPreview(imgSrc);
+        });
+    }
+    
+    // Remove button
+    const removeBtn = item.querySelector('.screenshot-remove-btn');
+    if(removeBtn) {
+        removeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            item.remove();
+        });
+    }
+}
+
+// Open screenshot preview modal
+function openScreenshotPreview(imgSrc) {
+    // Create modal element
+    const modal = document.createElement('div');
+    modal.className = 'modal fade screenshot-preview-modal';
+    modal.setAttribute('tabindex', '-1');
+    
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Screenshot Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="${imgSrc}" alt="Screenshot Preview">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add to document
+    document.body.appendChild(modal);
+    
+    // Initialize Bootstrap modal
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    // Clean up after closing
+    modal.addEventListener('hidden.bs.modal', function() {
+        document.body.removeChild(modal);
+    });
+}
 </script>
 {% endblock %} 

@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/page_content.css') }}">
+<style>
+    .experience-details-wrapper {
+        padding: var(--spacing-8) 0;
+    }
+    
+    .experience-header {
+        margin-bottom: var(--spacing-6);
+    }
+    
+    .experience-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .experience-company {
+        font-size: 1.5rem;
+        color: var(--color-grey-700);
+        margin-bottom: var(--spacing-3);
+    }
+    
+    .experience-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-6);
+        margin-bottom: var(--spacing-4);
+        flex-wrap: wrap;
+    }
+    
+    .experience-meta-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+        color: var(--color-grey-700);
+    }
+    
+    .experience-meta-item i {
+        color: var(--color-primary);
+        font-size: 1.2rem;
+    }
+    
+    .experience-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: var(--spacing-6);
+    }
+    
+    .experience-sidebar {
+        background-color: var(--color-grey-50);
+        border-radius: var(--border-radius-xl);
+        padding: var(--spacing-4);
+    }
+    
+    .experience-sidebar-section {
+        margin-bottom: var(--spacing-5);
+    }
+    
+    .experience-sidebar-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .experience-sidebar-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: var(--spacing-3);
+        color: var(--color-grey-900);
+        border-bottom: 1px solid var(--color-grey-200);
+        padding-bottom: var(--spacing-2);
+    }
+    
+    .skills-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-2);
+    }
+    
+    .achievements-list {
+        padding-left: var(--spacing-4);
+    }
+    
+    .achievements-list li {
+        margin-bottom: var(--spacing-2);
+    }
+    
+    .timeline-item {
+        display: flex;
+        margin-bottom: var(--spacing-2);
+    }
+    
+    .timeline-date {
+        width: 120px;
+        flex-shrink: 0;
+        color: var(--color-grey-600);
+    }
+    
+    @media (max-width: 768px) {
+        .experience-content {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-container experience-details-wrapper">
+    <div class="experience-header">
+        <h1 class="experience-title">{{ experience.position }}</h1>
+        <h2 class="experience-company">{{ experience.company }}</h2>
+        
+        <div class="experience-meta">
+            <div class="experience-meta-item">
+                <i class="bi bi-calendar"></i>
+                <span>
+                    {{ experience.start_date.strftime('%b %Y') }} - 
+                    {% if experience.end_date %}
+                        {{ experience.end_date.strftime('%b %Y') }}
+                    {% else %}
+                        Present
+                    {% endif %}
+                </span>
+            </div>
+            
+            {% if experience.location %}
+            <div class="experience-meta-item">
+                <i class="bi bi-geo-alt"></i>
+                <span>{{ experience.location }}</span>
+            </div>
+            {% endif %}
+            
+            {% if experience.employment_type %}
+            <div class="experience-meta-item">
+                <i class="bi bi-briefcase"></i>
+                <span>{{ experience.employment_type }}</span>
+            </div>
+            {% endif %}
+            
+            {% if experience.is_remote %}
+            <div class="experience-meta-item">
+                <i class="bi bi-laptop"></i>
+                <span>Remote</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="experience-content">
+        <div class="experience-main">
+            <div class="experience-description">
+                <h2>Overview</h2>
+                <div class="rich-text">{{ experience.description }}</div>
+            </div>
+            
+            {% if experience.responsibilities %}
+            <div class="experience-responsibilities mt-5">
+                <h2>Key Responsibilities</h2>
+                <div class="rich-text">{{ experience.responsibilities }}</div>
+            </div>
+            {% endif %}
+            
+            {% if experience.key_achievements %}
+            <div class="experience-achievements mt-5">
+                <h2>Key Achievements</h2>
+                <ul class="achievements-list">
+                    {% for achievement in experience.key_achievements.split('\n') %}
+                        {% if achievement.strip() %}
+                        <li>{{ achievement.strip() }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- Render page builder content -->
+            {% if experience.page_content %}
+                <div class="experience-detailed-content mt-5">
+                    {% for element in experience.page_content %}
+                        {% if element.type == 'header' %}
+                            <{{ element.heading_type|default('h2') }}>
+                                {{ element.content|safe }}
+                            </{{ element.heading_type|default('h2') }}>
+                        {% elif element.type == 'text' %}
+                            <p>{{ element.content|safe }}</p>
+                        {% elif element.type == 'image' %}
+                            <figure class="text-center">
+                                <img src="{{ element.image_url }}" 
+                                     alt="{{ element.content }}"
+                                     class="img-fluid">
+                                {% if element.content %}
+                                    <figcaption class="text-muted mt-2">
+                                        {{ element.content }}
+                                    </figcaption>
+                                {% endif %}
+                            </figure>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="experience-sidebar">
+            {% if experience.skills %}
+            <div class="experience-sidebar-section">
+                <h3 class="experience-sidebar-title">Skills Used</h3>
+                <div class="skills-list">
+                    {% for skill in experience.skills.split(',') %}
+                    <span class="card-tag">{{ skill.strip() }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if experience.team_size %}
+            <div class="experience-sidebar-section">
+                <h3 class="experience-sidebar-title">Team Size</h3>
+                <p>{{ experience.team_size }} members</p>
+            </div>
+            {% endif %}
+            
+            {% if experience.company %}
+            <div class="experience-sidebar-section">
+                <h3 class="experience-sidebar-title">Company</h3>
+                <div class="company-info">
+                    <p><strong>{{ experience.company }}</strong></p>
+                    {% if experience.location %}
+                    <p><i class="bi bi-geo-alt"></i> {{ experience.location }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="experience-sidebar-section">
+                <h3 class="experience-sidebar-title">Timeline</h3>
+                <div class="timeline">
+                    {% if experience.start_date %}
+                    <div class="timeline-item">
+                        <div class="timeline-date">{{ experience.start_date.strftime('%b %Y') }}</div>
+                        <div class="timeline-event">Started position</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if experience.end_date %}
+                    <div class="timeline-item">
+                        <div class="timeline-date">{{ experience.end_date.strftime('%b %Y') }}</div>
+                        <div class="timeline-event">End of position</div>
+                    </div>
+                    {% else %}
+                    <div class="timeline-item">
+                        <div class="timeline-date">Present</div>
+                        <div class="timeline-event">Currently in this role</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

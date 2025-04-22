@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/page_content.css') }}">
+<style>
+    .project-details-wrapper {
+        padding: var(--spacing-8) 0;
+    }
+    
+    .project-header {
+        margin-bottom: var(--spacing-6);
+    }
+    
+    .project-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-3);
+    }
+    
+    .project-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-6);
+        margin-bottom: var(--spacing-4);
+        flex-wrap: wrap;
+    }
+    
+    .project-meta-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+        color: var(--color-grey-700);
+    }
+    
+    .project-meta-item i {
+        color: var(--color-primary);
+        font-size: 1.2rem;
+    }
+    
+    .project-actions {
+        display: flex;
+        gap: var(--spacing-3);
+        margin-top: var(--spacing-4);
+        flex-wrap: wrap;
+    }
+    
+    .project-image {
+        width: 100%;
+        border-radius: var(--border-radius-xl);
+        overflow: hidden;
+        margin-bottom: var(--spacing-6);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+    
+    .project-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    
+    .project-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: var(--spacing-6);
+    }
+    
+    .project-sidebar {
+        background-color: var(--color-grey-50);
+        border-radius: var(--border-radius-xl);
+        padding: var(--spacing-4);
+    }
+    
+    .project-sidebar-section {
+        margin-bottom: var(--spacing-5);
+    }
+    
+    .project-sidebar-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .project-sidebar-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: var(--spacing-3);
+        color: var(--color-grey-900);
+        border-bottom: 1px solid var(--color-grey-200);
+        padding-bottom: var(--spacing-2);
+    }
+    
+    .tech-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-2);
+    }
+    
+    @media (max-width: 768px) {
+        .project-content {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-container project-details-wrapper">
+    <div class="project-header">
+        <h1 class="project-title">{{ project.title }}</h1>
+        
+        <div class="project-meta">
+            {% if project.created_at %}
+            <div class="project-meta-item">
+                <i class="bi bi-calendar"></i>
+                <span>Created: {{ project.created_at.strftime('%b %Y') }}</span>
+            </div>
+            {% endif %}
+            
+            {% if project.project_status %}
+            <div class="project-meta-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Status: {{ project.project_status }}</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="project-actions">
+            {% if project.github_url %}
+            <a href="{{ project.github_url }}" class="card-btn card-btn-secondary" target="_blank">
+                <i class="bi bi-github"></i> View on GitHub
+            </a>
+            {% endif %}
+            {% if project.live_url %}
+            <a href="{{ project.live_url }}" class="card-btn card-btn-primary" target="_blank">
+                <i class="bi bi-box-arrow-up-right"></i> Live Demo
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if project.image_url %}
+    <div class="project-image">
+        <img src="{{ url_for('static', filename='uploads/' + project.image_url) }}" alt="{{ project.title }}">
+    </div>
+    {% endif %}
+    
+    <div class="project-content">
+        <div class="project-main">
+            <div class="project-description">
+                <h2>About this Project</h2>
+                <div class="rich-text">{{ project.description }}</div>
+            </div>
+            
+            <!-- Render page builder content -->
+            {% if project.page_content %}
+                <div class="project-detailed-content">
+                    {% for element in project.page_content %}
+                        {% if element.type == 'header' %}
+                            <{{ element.heading_type|default('h2') }}>
+                                {{ element.content|safe }}
+                            </{{ element.heading_type|default('h2') }}>
+                        {% elif element.type == 'text' %}
+                            <p>{{ element.content|safe }}</p>
+                        {% elif element.type == 'image' %}
+                            <figure class="text-center">
+                                <img src="{{ element.image_url }}" 
+                                     alt="{{ element.content }}"
+                                     class="img-fluid">
+                                {% if element.content %}
+                                    <figcaption class="text-muted mt-2">
+                                        {{ element.content }}
+                                    </figcaption>
+                                {% endif %}
+                            </figure>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="project-sidebar">
+            <div class="project-sidebar-section">
+                <h3 class="project-sidebar-title">Technologies</h3>
+                <div class="tech-list">
+                    {% if project.technologies %}
+                        {% for tech in project.technologies.split(',') %}
+                        <span class="project-card-tech-item">{{ tech.strip() }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">No technologies specified</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="project-sidebar-section">
+                <h3 class="project-sidebar-title">Links</h3>
+                <ul class="project-links-list">
+                    {% if project.github_url %}
+                    <li>
+                        <a href="{{ project.github_url }}" class="card-link" target="_blank">
+                            <i class="bi bi-github"></i> GitHub Repository
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% if project.live_url %}
+                    <li>
+                        <a href="{{ project.live_url }}" class="card-link" target="_blank">
+                            <i class="bi bi-link-45deg"></i> Live Demo
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            {% if project.created_at or project.modified_at %}
+            <div class="project-sidebar-section">
+                <h3 class="project-sidebar-title">Timeline</h3>
+                <div class="project-timeline">
+                    {% if project.created_at %}
+                    <div class="project-timeline-item">
+                        <div class="timeline-date">{{ project.created_at.strftime('%b %d, %Y') }}</div>
+                        <div class="timeline-event">Project started</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if project.modified_at and project.modified_at != project.created_at %}
+                    <div class="project-timeline-item">
+                        <div class="timeline-date">{{ project.modified_at.strftime('%b %d, %Y') }}</div>
+                        <div class="timeline-event">Last updated</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

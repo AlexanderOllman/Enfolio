@@ -14,6 +14,7 @@ class Content(db.Model):
     image_url = db.Column(db.String(500))
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_live = db.Column(db.Boolean, default=False)  # Controls whether content is visible on frontend
     
     # For Experience type
     company = db.Column(db.String(200))
@@ -32,6 +33,10 @@ class Content(db.Model):
     github_url = db.Column(db.String(500))
     live_url = db.Column(db.String(500))
     technologies = db.Column(db.String(500))
+    project_status = db.Column(db.String(50))
+    project_client = db.Column(db.String(200))
+    media_urls = db.Column(db.JSON)
+    screenshots = db.Column(db.JSON)  # Store multiple screenshot URLs as JSON array
     
     # Page Builder content - available for all content types
     page_content = db.Column(db.JSON)

@@ -195,10 +195,10 @@ body, html {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  margin-bottom: 5px;
+  margin: 3px;
 }
 
-.nav-link:before {
+/* .nav-link:before {
   content: '';
   position: absolute;
   left: 0;
@@ -209,7 +209,7 @@ body, html {
   opacity: 0;
   border-radius: 0 2px 2px 0;
   transition: opacity 0.3s ease;
-}
+} */
 
 .nav-link:hover {
   color: white;
